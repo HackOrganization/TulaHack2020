@@ -2,6 +2,9 @@
 using Camera.Utils;
 using Core;
 using Core.OrderStart;
+using Networking;
+using Networking.Message;
+using Networking.Message.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils.Extensions;
@@ -56,7 +59,7 @@ namespace Camera.Video
         {
             SetUpWebCam();
             SetUpDestination();
-            Play();   
+            Play();
         }
 
         /// <summary>

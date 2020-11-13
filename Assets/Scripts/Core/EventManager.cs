@@ -9,7 +9,10 @@ namespace Core
     public enum EventType 
     {
         DeviceAuthorized,
-        DeviceLocked
+        DeviceLocked,
+        
+        ClientConnected,
+        ClientReceivedMessage
     }
 
     /// <summary>
