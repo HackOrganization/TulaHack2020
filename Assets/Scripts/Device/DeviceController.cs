@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using Core;
 using Device.Hardware;
+using Device.Networking;
 using Device.Utils;
 using Device.Video;
 using Networking.Client;
@@ -34,10 +35,9 @@ namespace Device
         /// Фиксирует, что устройство готово к работе.
         /// Для этого необходиом, чтобы было создано соединение с сервером и камера подключилась
         /// </summary>
-        public bool IsReady => _clientConnected && videoHandler.IsAuthorized;
+        public bool IsReady => _client.Connected && videoHandler.IsAuthorized;
         
-        private bool _clientConnected;
-        private AsynchronousClient _client;
+        private NeuralNetworkBaseClient _client;
         private readonly Dictionary<ushort, Vector2> _framePositionMap = new Dictionary<ushort, Vector2>(); 
         
         /// <summary>
@@ -48,32 +48,11 @@ namespace Device
             if (!execute)
                 return;
             
-            EventManager.AddHandler(EventType.ClientConnected, OnClientConnected);
-            
             videoHandler.Initialize(cameraType);
             hardwareController.Initialize();
-            _client = AsynchronousClient.Connect(endPoint);
+            _client = new NeuralNetworkSocketClient(endPoint);
         }
         
-        /// <summary>
-        /// При подключении клиента 
-        /// </summary>
-        private void OnClientConnected(object[] args)
-        {
-            if(!(bool) args[0])
-                return;
-
-            var localPoint = (IPEndPoint) args[1];
-            var remotePoint = (IPEndPoint) args[2];
-            
-            if(!((IPEndPoint)_client.Socket.LocalEndPoint).Equals(localPoint))
-                return;
-            
-            Debug.Log($"[Client] Connected: {localPoint} -> {remotePoint}");
-            _client.Receive();
-            _clientConnected = true;
-        }
-
         /// <summary>
         /// Перехватывает команду отправки изображения
         /// </summary>
@@ -97,13 +76,11 @@ namespace Device
             };
 
             File.WriteAllBytes($@"C:\tmp\clientImage{newMessage.PacketId}.jpg", newMessage.Image.EncodeToJPG());
-            _client.Send(newMessage.Serialize());
+            _client.SendMessage(newMessage);
         }
 
         private void OnDisable()
         {
-            EventManager.RemoveHandler(EventType.ClientConnected, OnClientConnected);
-            
             _client?.Dispose();
         }
     }

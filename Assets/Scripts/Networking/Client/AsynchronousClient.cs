@@ -219,7 +219,26 @@ namespace Networking.Client
             else
                 ThreadManager.AsyncExecute(AsyncCloseCallback, null);
         }
-        
+
+        /// <summary>
+        /// Операция сравнения клиента 
+        /// </summary>
+        public bool IsThis(object obj)
+        {
+            if(obj is AsynchronousClient client)
+                return IsThis(client.Socket.LocalEndPoint, client.Socket.RemoteEndPoint);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Операция сравнения клиента 
+        /// </summary>
+        public bool IsThis(EndPoint localPoint, EndPoint remotePoint)
+        {
+            return Socket.LocalEndPoint.Equals(localPoint) && Socket.RemoteEndPoint.Equals(remotePoint);
+        }
+
         #region DISPOSE
 
         /// <summary>
@@ -257,22 +276,3 @@ namespace Networking.Client
         #endregion
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -46,8 +46,6 @@ namespace Device
         
         public void OnStart()
         {
-            EventManager.AddHandler(EventType.ReceivedMessage, OnMessageReceived);
-            
             _untilAllReady = new WaitUntil(()=> deviceControllers.All(d => d.IsReady));
             _loopAwait = new WaitForSeconds(Params.CAPTURE_PER_SECOND);
             
@@ -61,8 +59,6 @@ namespace Device
 
         private void OnDisable()
         {
-            EventManager.RemoveHandler(EventType.ReceivedMessage, OnMessageReceived);
-            
             StopCoroutine(CorRun());
             _isDisposed = true;
         }
@@ -96,44 +92,5 @@ namespace Device
                     yield break;
             }
         }
-        
-        /// <summary>
-        /// Перехватывает событие получения сообщения
-        /// <param name="args">MessageType, IMessage, AsynchronousClient</param>
-        /// </summary>
-        private static void OnMessageReceived(object[] args)
-        {
-            var messageType = (MessageType) args[0]; 
-            if(!messageType.GetMessageDestination().IsClientSupported())
-                return;
-
-            var client = (AsynchronousClient) args[2];
-            
-            switch (messageType)
-            {
-                case MessageType.CloseConnection:
-                    client.SafeDispose();
-                    break;
-                
-                case MessageType.WideFieldPosition:
-                    OnWideFieldPositionCaught(client, (WideFieldPositionMessage) args[1]);
-                    break;
-                
-                case MessageType.TightFieldPosition:
-                    Debug.Log("TightFieldPosition caught");
-                    break;
-                
-                default: return;
-            }
-        }
-        
-        #region SERVER RESPONSES
-
-        private static void OnWideFieldPositionCaught(AsynchronousClient client, WideFieldPositionMessage message)
-        {
-            Debug.Log($"[Client] WideField[{message.PacketId}]: take position \"{message.Position}\"");
-        }
-        
-        #endregion
     }
 }
