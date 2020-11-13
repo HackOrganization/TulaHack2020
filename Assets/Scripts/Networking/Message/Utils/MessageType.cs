@@ -8,6 +8,9 @@ namespace Networking.Message.Utils
     /// </summary>
     public enum MessageType
     {
+        [MessageDestination(MessageDestinationTypes.Null)]
+        Null,
+        
         [MessageDestination(MessageDestinationTypes.Both)]
         CloseConnection,
         
