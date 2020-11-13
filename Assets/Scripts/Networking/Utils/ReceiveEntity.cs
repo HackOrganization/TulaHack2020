@@ -11,20 +11,19 @@ namespace Networking.Utils
         /// <summary>
         /// Сокет клиента
         /// </summary>
-        public readonly Socket WorkSocket;
-        
+        public readonly AsynchronousClient Client;
         /// <summary>
         /// Буффер данных, в котором записываются отправленные данные
         /// </summary>
         public readonly byte[] Buffer = new byte[Params.RECEIVE_BUFFER_SEZE];  
-        
         /// <summary>
         /// Объединенные данные со всех пакетов текущего сообщения
         /// </summary>
         public readonly List<byte> ReceivedBytes = new List<byte>(); 
-        public ReceiveEntity(Socket client)
+        
+        public ReceiveEntity(AsynchronousClient client)
         {
-            WorkSocket = client;
+            Client = client;
         }
     }  
 }

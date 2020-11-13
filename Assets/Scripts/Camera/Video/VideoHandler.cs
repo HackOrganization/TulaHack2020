@@ -2,9 +2,6 @@
 using Camera.Utils;
 using Core;
 using Core.OrderStart;
-using Networking;
-using Networking.Message;
-using Networking.Message.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils.Extensions;
@@ -33,7 +30,7 @@ namespace Camera.Video
         [SerializeField] 
         private CameraIdentificationSettings cameraIdentificationSettings;
 
-
+        private bool _initialized;
         private Texture2D _sendFrame;
         private Vector2Int _webCamResolution;
         private WebCamTexture _webCamTexture;
@@ -58,7 +55,7 @@ namespace Camera.Video
         private void OnCameraAuthorized(object[] args)
         {
             SetUpWebCam();
-            SetUpDestination();
+            
             Play();
         }
 
@@ -70,7 +67,13 @@ namespace Camera.Video
             var idName = cameraIdentificationSettings.GetName(cameraType);
             _webCamDevice = WebCamTexture.devices.GetByIdentificationName(idName);
             _webCamTexture = new WebCamTexture(_webCamDevice.name);
+        }
 
+        /// <summary>
+        /// Настраиваем объект, который будем отправлять
+        /// </summary>
+        private void SetUpSendFrame()
+        {
             _webCamResolution = new Vector2Int(_webCamTexture.width, _webCamTexture.height);
             _sendFrame = new Texture2D(_webCamResolution.x, _webCamResolution.y);
         }
@@ -93,6 +96,13 @@ namespace Camera.Video
         {
             if (_webCamTexture != null)
                 _webCamTexture.Play();
+            
+            if(_initialized)
+                return;
+            
+            SetUpSendFrame();
+            SetUpDestination();
+            _initialized = true;
         }
 
         /// <summary>
@@ -102,6 +112,14 @@ namespace Camera.Video
         {
             if (_webCamTexture != null)
                 _webCamTexture.Stop();
+        }
+
+        /// <summary>
+        /// Захватывает изображение с камеры для дальнейшей передачи
+        /// </summary>
+        public void Capture()
+        {
+            _sendFrame.SetPixels32(_webCamTexture.GetPixels32());
         }
     }
 }

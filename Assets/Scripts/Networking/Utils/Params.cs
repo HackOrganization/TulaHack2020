@@ -7,8 +7,8 @@ namespace Networking.Utils
         public const int RECEIVE_BUFFER_SEZE = 256;
 
         private const string IP_ADDRESS = "127.0.0.1";
-        private const int PORT = 11000;
         
-        public static readonly IPEndPoint EndPoint = new IPEndPoint(IPAddress.Parse(IP_ADDRESS), PORT);
+        public static readonly IPEndPoint WideFieldEndPoint = new IPEndPoint(IPAddress.Parse(IP_ADDRESS), WIDE_FIELD_PORT);
+        private const int WIDE_FIELD_PORT = 11000;
     }
 }

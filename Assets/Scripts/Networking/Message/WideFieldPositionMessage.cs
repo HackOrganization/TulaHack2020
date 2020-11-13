@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Security.Cryptography.X509Certificates;
-using Networking.Message.Utils;
+﻿using Networking.Message.Utils;
 using UnityEngine;
 
 namespace Networking.Message
 {
+    /// <summary>
+    /// Сообщение с координатами на изображении широкопольной камеры
+    /// </summary>
     public class WideFieldPositionMessage: IMessage
     {
         /// <summary>
@@ -46,20 +45,12 @@ namespace Networking.Message
         {
             var message = new WideFieldPositionMessage();
             var offset = 1;
-            message.PacketId = SerializeManager.GetBytes(data, ref offset);
-            var x = SerializeManager.GetBytes(data, ref offset);
-            var y = SerializeManager.GetBytes(data, ref offset);
+            message.PacketId = SerializeManager.GetUInt16(data, ref offset);
+            var x = SerializeManager.GetUInt16(data, ref offset);
+            var y = SerializeManager.GetUInt16(data, ref offset);
             message.Position = new Vector2Int(x, y);
 
             return message;
         }
-
-        // public override bool Equals(object obj)
-        // {
-        //     if (obj is WideFieldPositionMessage message)
-        //         return PacketId == message.PacketId && Position == message.Position;
-        //
-        //     return false;
-        // }
     }
 }

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using Core;
-using Networking.Message;
 using Networking.Message.Utils;
 using Networking.Utils;
 using UnityAsyncHelper.Core;
@@ -13,25 +12,29 @@ using EventType = Core.EventType;
 
 namespace Networking
 {
-    public static class AsynchronousClient
+    public class AsynchronousClient
     {
-        private static readonly ManualResetEvent ConnectDone = new ManualResetEvent(false);
-        private static readonly ManualResetEvent SendDone = new ManualResetEvent(false);
-        private static readonly ManualResetEvent ReceiveDone = new ManualResetEvent(false);
+        private readonly ManualResetEvent _connectDone = new ManualResetEvent(false);
+        private readonly ManualResetEvent _sendDone = new ManualResetEvent(false);
+        private readonly ManualResetEvent _receiveDone = new ManualResetEvent(false);
 
-        private static Socket _client;
+        private readonly Socket _socket;
+
+        public AsynchronousClient(IPEndPoint remoteEndPoint)
+        {
+            _socket = new Socket(remoteEndPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+        }
         
         /// <summary>
         /// Подключается к серверу
         /// </summary>
-        public static void Connect()
+        public static void Connect(IPEndPoint remoteEndPoint)
         {
             try
             {
-                var remoteEndPoint = Params.EndPoint;
-                _client = new Socket(remoteEndPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                _client.BeginConnect(remoteEndPoint, ConnectCallback, _client);
-                ConnectDone.WaitOne();
+                var newClient = new AsynchronousClient(remoteEndPoint);
+                newClient._socket.BeginConnect(remoteEndPoint, ConnectCallback, newClient);
+                newClient._connectDone.WaitOne();
             }
             catch (Exception e)
             {
@@ -44,22 +47,22 @@ namespace Networking
         /// </summary>
         private static void ConnectCallback(IAsyncResult ar)
         {
-            var client = (Socket) ar.AsyncState;
-            client.EndConnect(ar);
+            var client = (AsynchronousClient) ar.AsyncState;
+            client._socket.EndConnect(ar);
             
             ThreadManager.ExecuteOnMainThread(
-                () => EventManager.RaiseEvent(EventType.ClientConnected, client.RemoteEndPoint));
-            ConnectDone.Set();
+                () => EventManager.RaiseEvent(EventType.ClientConnected, client._socket.RemoteEndPoint));
+            client._connectDone.Set();
         }
 
         /// <summary>
         /// Принимает сообщение
         /// </summary>
-        public static void Receive()
+        public void Receive()
         {
-            var state = new ReceiveEntity(_client);
-            _client.BeginReceive(state.Buffer, 0, Params.RECEIVE_BUFFER_SEZE, 0, ReceiveCallback, state);
-            ReceiveDone.WaitOne();
+            var state = new ReceiveEntity(this);
+            _socket.BeginReceive(state.Buffer, 0, Params.RECEIVE_BUFFER_SEZE, 0, ReceiveCallback, state);
+            _receiveDone.WaitOne();
         }
 
         /// <summary>
@@ -70,13 +73,13 @@ namespace Networking
         private static void ReceiveCallback(IAsyncResult ar)
         {
             var state = (ReceiveEntity) ar.AsyncState;
-            var client = state.WorkSocket;
-            var bytesRead = client.EndReceive(ar);
+            var socket = state.Client._socket;
+            var bytesRead = socket.EndReceive(ar);
 
             if (bytesRead > 0)
             {
                 state.ReceivedBytes.AddRange(state.Buffer.Take(bytesRead));
-                client.BeginReceive(state.Buffer, 0, Params.RECEIVE_BUFFER_SEZE, 0, ReceiveCallback, state);
+                socket.BeginReceive(state.Buffer, 0, Params.RECEIVE_BUFFER_SEZE, 0, ReceiveCallback, state);
             }
             else
             {
@@ -87,7 +90,7 @@ namespace Networking
                     ThreadManager.ExecuteOnMainThread(
                         () => EventManager.RaiseEvent(EventType.ClientReceivedMessage, messageType, message));
                 }
-                ReceiveDone.Set();
+                state.Client._receiveDone.Set();
             }
         }
     }
