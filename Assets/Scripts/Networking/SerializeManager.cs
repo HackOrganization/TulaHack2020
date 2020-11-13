@@ -17,8 +17,12 @@ namespace Networking
         {
             switch (messageType)
             {
+                case MessageType.CloseConnection:
+                    return CloseConnectionMessage.Deserialize(in data);
+                
                 case MessageType.WideFieldImage:
-                    return WideFieldImageMessage.Deserialize(in data);
+                case MessageType.TightFieldImage:
+                    return ImageMessage.Deserialize(in data);
                 
                 case MessageType.WideFieldPosition:
                     return WideFieldPositionMessage.Deserialize(in data);
@@ -30,12 +34,23 @@ namespace Networking
         /// <summary>
         /// Возвращает занчение типа UInt16 из массива байтов начиная с offset
         /// </summary>
-        public static ushort GetUInt16(in Array source, ref int offset)
+        public static ushort GetUInt16(in byte[] source, ref int offset)
         {
-            var result = new byte[2];
-            Array.Copy(source, offset, result, 0, 2);
-            offset += 2;
-            return BitConverter.ToUInt16(result, 0);
+            const int length = sizeof(ushort);
+            var value = BitConverter.ToUInt16(source, offset);
+            offset += length;
+            return value;
+        }
+        
+        /// <summary>
+        /// Возвращает занчение типа UInt16 из массива байтов начиная с offset
+        /// </summary>
+        public static bool GetBoolean(in byte[] source, ref int offset)
+        {
+            const int length = sizeof(ushort);
+            var value = BitConverter.ToBoolean(source, offset);
+            offset += length;
+            return value;
         }
 
         /// <summary>
@@ -78,6 +93,17 @@ namespace Networking
         {
             if(length == 0)
                 length = sizeof(ushort);
+            Array.Copy(BitConverter.GetBytes(value), 0, destination, offset, length);
+            return offset + length;
+        }
+        
+        /// <summary>
+        /// Добавляет в массив байтов значение Value типа UInt16 и возвращает новую позицию головки записи
+        /// </summary>
+        public static int SetBytes(in byte[] destination, bool value, int offset = 0, int length = 0)
+        {
+            if(length == 0)
+                length = sizeof(bool);
             Array.Copy(BitConverter.GetBytes(value), 0, destination, offset, length);
             return offset + length;
         }

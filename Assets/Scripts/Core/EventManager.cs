@@ -11,8 +11,11 @@ namespace Core
         DeviceAuthorized,
         DeviceLocked,
         
-        ClientConnected,
-        ClientReceivedMessage
+        ClientConnected, //IsClientSide, LocalEndPoint, RemoteEndPoint
+        ReceivedMessage, //MessageType, IMessage, AsynchronousClient
+        
+        DeviceSendImage, //CameraTypes
+        DeviceGoPosition, //Vector2
     }
 
     /// <summary>

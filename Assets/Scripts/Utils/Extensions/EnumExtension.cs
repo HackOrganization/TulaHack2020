@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq;
+using Attributes;
+using Networking.Utils;
 
 namespace Utils.Extensions
 {
@@ -48,5 +50,28 @@ namespace Utils.Extensions
             var values = (T[]) Enum.GetValues(typeof(T));
             return values.Select(e => e.GetDescription()).ToArray();
         }
+
+        /// <summary>
+        /// Получает из типа сообщения тип, кому предназанчено это сообщение
+        /// </summary>
+        public static MessageDestinationTypes GetMessageDestination(this Enum value)
+        {
+            var fieldInfo = value.GetType().GetField(value.ToString());
+            var descriptionAttribute = (MessageDestination) Attribute.GetCustomAttribute(fieldInfo, typeof(MessageDestination));
+
+            return descriptionAttribute?.Type ?? MessageDestinationTypes.Null;
+        }
+
+        /// <summary>
+        /// Данный тип сообщения поддерживается сервером  
+        /// </summary>
+        public static bool IsServerSupported(this MessageDestinationTypes type)
+            => type == MessageDestinationTypes.Server || type == MessageDestinationTypes.Both;
+
+        /// <summary>
+        /// Данный тип сообщения поддерживается клиентом  
+        /// </summary>
+        public static bool IsClientSupported(this MessageDestinationTypes type)
+            => type == MessageDestinationTypes.Client || type == MessageDestinationTypes.Both;
     }
 }
