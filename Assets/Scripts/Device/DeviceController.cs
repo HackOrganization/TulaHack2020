@@ -97,7 +97,6 @@ namespace Device
             };
 
             File.WriteAllBytes($@"C:\tmp\clientImage{newMessage.PacketId}.jpg", newMessage.Image.EncodeToJPG());
-            
             _client.Send(newMessage.Serialize());
         }
 
