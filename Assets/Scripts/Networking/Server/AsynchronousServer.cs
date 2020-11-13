@@ -15,7 +15,7 @@ namespace Networking.Server
 {
     public class AsynchronousServer: IDisposable
     {
-        public static readonly Dictionary<AsynchronousServer, List<AsynchronousClient>> ListenerClientMap = new Dictionary<AsynchronousServer, List<AsynchronousClient>>();
+        private static readonly Dictionary<AsynchronousServer, List<AsynchronousClient>> ListenerClientMap = new Dictionary<AsynchronousServer, List<AsynchronousClient>>();
 
         private readonly ManualResetEvent _allDone = new ManualResetEvent(false);
         private readonly Socket _socket;

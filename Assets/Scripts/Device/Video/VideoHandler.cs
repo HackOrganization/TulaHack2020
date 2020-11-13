@@ -46,7 +46,6 @@ namespace Device.Video
 
         public void Initialize(CameraTypes cameraType)
         {
-            Debug.Log($"Start initialize: {cameraType}");
             EventManager.AddHandler(EventType.DeviceAuthorized, OnCameraAuthorized);
             _cameraType = cameraType;
         }
@@ -68,8 +67,6 @@ namespace Device.Video
             Status = VideoStatuses.Authorized;
             if(_cameraType == CameraTypes.WideField)
                 Play();
-            
-            Debug.Log("VideoHandler ready");
         }
 
         /// <summary>

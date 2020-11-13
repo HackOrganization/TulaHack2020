@@ -15,7 +15,6 @@ namespace Device.Hardware
         public void Initialize()
         {
             //ToDo: Hadle from device current position
-            Debug.Log("Hardware inited");
         }
 
         /// <summary>
