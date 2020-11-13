@@ -9,7 +9,13 @@ namespace Core
     public enum EventType 
     {
         DeviceAuthorized,
-        DeviceLocked
+        DeviceLocked,
+        
+        ClientConnected, //IsClientSide, LocalEndPoint, RemoteEndPoint
+        ReceivedMessage, //MessageType, IMessage, AsynchronousClient
+        
+        DeviceSendImage, //CameraTypes
+        DeviceGoPosition, //Vector2
     }
 
     /// <summary>

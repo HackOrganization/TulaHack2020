@@ -1,28 +1,21 @@
-﻿using Camera.Data;
-using Camera.Utils;
+﻿using System.Collections;
 using Core;
-using Core.OrderStart;
+using Device.Data;
+using Device.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils.Extensions;
 using EventType = Core.EventType;
 
-namespace Camera.Video
+namespace Device.Video
 {
     /// <summary>
     /// Захватывает видео с камеры.
     /// Вызывается перед тем, как будет подвтержден запрос на авторизацию камер,
     /// чтобы событие авторизации пришло позже того, как мы на него подпишемся
     /// </summary>
-    public class VideoHandler : MonoBehaviour, IStarter
+    public class VideoHandler : MonoBehaviour
     {
-        [Header("Test")] 
-        [SerializeField] private bool execute;
-        
-        [Header("Camera info")] 
-        [SerializeField]
-        private CameraTypes cameraType;
-
         [Header("UI")] 
         [SerializeField] private RawImage destination;
         
@@ -30,18 +23,32 @@ namespace Camera.Video
         [SerializeField] 
         private CameraIdentificationSettings cameraIdentificationSettings;
 
+        /// <summary>
+        /// Текущий статус контроллера 
+        /// </summary>
+        public VideoStatuses Status { get; private set; } = VideoStatuses.Null;
+
+        /// <summary>
+        /// Флаг, что необхдимые насктройки камеры выполнены
+        /// </summary>
+        public bool IsAuthorized => Status >= VideoStatuses.Authorized;
+
+        /// <summary>
+        /// Картинка, подлежащая отправке
+        /// </summary>
+        public Texture2D SendFrame { get; private set; }
+
         private bool _initialized;
-        private Texture2D _sendFrame;
+        private CameraTypes _cameraType;
         private Vector2Int _webCamResolution;
         private WebCamTexture _webCamTexture;
         private WebCamDevice _webCamDevice;
-        
-        public void OnStart()
+
+        public void Initialize(CameraTypes cameraType)
         {
-            if(!execute)
-                return;
-            
+            Debug.Log($"Start initialize: {cameraType}");
             EventManager.AddHandler(EventType.DeviceAuthorized, OnCameraAuthorized);
+            _cameraType = cameraType;
         }
 
         private void OnDestroy()
@@ -54,19 +61,15 @@ namespace Camera.Video
         /// </summary>
         private void OnCameraAuthorized(object[] args)
         {
-            SetUpWebCam();
-            
-            Play();
-        }
-
-        /// <summary>
-        /// Настройка камеры
-        /// </summary>
-        private void SetUpWebCam()
-        {
-            var idName = cameraIdentificationSettings.GetName(cameraType);
+            var idName = cameraIdentificationSettings.GetName(_cameraType);
             _webCamDevice = WebCamTexture.devices.GetByIdentificationName(idName);
             _webCamTexture = new WebCamTexture(_webCamDevice.name);
+
+            Status = VideoStatuses.Authorized;
+            if(_cameraType == CameraTypes.WideField)
+                Play();
+            
+            Debug.Log("VideoHandler ready");
         }
 
         /// <summary>
@@ -75,7 +78,7 @@ namespace Camera.Video
         private void SetUpSendFrame()
         {
             _webCamResolution = new Vector2Int(_webCamTexture.width, _webCamTexture.height);
-            _sendFrame = new Texture2D(_webCamResolution.x, _webCamResolution.y);
+            SendFrame = new Texture2D(_webCamResolution.x, _webCamResolution.y);
         }
 
         /// <summary>
@@ -92,34 +95,49 @@ namespace Camera.Video
         /// <summary>
         /// Чтение с камеры
         /// </summary>
-        public void Play()
+        public bool Play()
         {
+            if(Status < VideoStatuses.Authorized)
+                return false;
+            
             if (_webCamTexture != null)
                 _webCamTexture.Play();
+
+            Status = VideoStatuses.Play;
             
             if(_initialized)
-                return;
+                return true;
             
             SetUpSendFrame();
             SetUpDestination();
             _initialized = true;
+
+            return true;
         }
 
         /// <summary>
         /// Остановка четния с камеры
         /// </summary>
-        public void Stop()
+        public bool Stop()
         {
+            if(Status < VideoStatuses.Authorized)
+                return false;
+            
             if (_webCamTexture != null)
                 _webCamTexture.Stop();
+
+            Status = VideoStatuses.Pause;
+
+            return true;
         }
 
         /// <summary>
         /// Захватывает изображение с камеры для дальнейшей передачи
         /// </summary>
-        public void Capture()
+        public IEnumerator Capture()
         {
-            _sendFrame.SetPixels32(_webCamTexture.GetPixels32());
+            yield return new WaitForEndOfFrame();
+            SendFrame.SetPixels32(_webCamTexture.GetPixels32());
         }
     }
 }
