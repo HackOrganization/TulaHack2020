@@ -1,5 +1,6 @@
 ﻿using Networking.Message.Utils;
 using UnityEngine;
+using Utils.Extensions;
 
 namespace Networking.Message
 {
@@ -36,13 +37,15 @@ namespace Networking.Message
         public byte[] Serialize()
         {
             var imageBytes = Image.EncodeToJPG();
-            var data = new byte[1 + 2 + (2 + 2 + imageBytes.Length)];
-            
-            var offset = SerializeManager.SetByte(in data, (byte) MessageType);
-            offset = SerializeManager.SetBytes(in data, PacketId, offset);
-            offset = SerializeManager.SetBytes(in data, (ushort) Image.width, offset);
-            offset = SerializeManager.SetBytes(in data, (ushort) Image.height, offset);
-            SerializeManager.SetBytes(in data, imageBytes, offset);
+            var length = (ushort) (1 + 2 + (2 + 2 + imageBytes.Length));
+            this.CreatePacket(length, out var data);
+
+            var offset = MessageExtensions.HEADER_LENGTH;
+            offset = MessageExtensions.SetByte(in data, (byte) MessageType, offset);
+            offset = MessageExtensions.SetBytes(in data, PacketId, offset);
+            offset = MessageExtensions.SetBytes(in data, (ushort) Image.width, offset);
+            offset = MessageExtensions.SetBytes(in data, (ushort) Image.height, offset);
+            MessageExtensions.SetBytes(in data, imageBytes, offset);
             
             return data;
         }
@@ -52,18 +55,18 @@ namespace Networking.Message
         /// </summary>
         public static IMessage Deserialize(in byte[] data)
         {
-            var offset = 0;
+            var offset = MessageExtensions.HEADER_LENGTH;
             var message = new ImageMessage((MessageType) data[offset++])
             {
-                PacketId = SerializeManager.GetUInt16(data, ref offset)
+                PacketId = MessageExtensions.GetUInt16(data, ref offset)
             };
             
-            var width = SerializeManager.GetUInt16(data, ref offset);
-            var height = SerializeManager.GetUInt16(data, ref offset);
+            var width = MessageExtensions.GetUInt16(data, ref offset);
+            var height = MessageExtensions.GetUInt16(data, ref offset);
             message.Image = new Texture2D(width, height, TextureFormat.RGBA32,false);
-            message.Image.LoadImage(SerializeManager.GetBytes(data, ref offset));
+            message.Image.LoadImage(MessageExtensions.GetBytes(data, ref offset));
             
-            return null;    
+            return message;    
         }
     }
 }

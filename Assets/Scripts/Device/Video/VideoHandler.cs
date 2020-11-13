@@ -1,4 +1,5 @@
-﻿using Core;
+﻿using System.Collections;
+using Core;
 using Device.Data;
 using Device.Utils;
 using UnityEngine;
@@ -133,8 +134,9 @@ namespace Device.Video
         /// <summary>
         /// Захватывает изображение с камеры для дальнейшей передачи
         /// </summary>
-        public void Capture()
+        public IEnumerator Capture()
         {
+            yield return new WaitForEndOfFrame();
             SendFrame.SetPixels32(_webCamTexture.GetPixels32());
         }
     }

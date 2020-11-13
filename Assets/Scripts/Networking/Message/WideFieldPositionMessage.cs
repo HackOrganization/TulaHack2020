@@ -1,5 +1,6 @@
 ﻿using Networking.Message.Utils;
 using UnityEngine;
+using Utils.Extensions;
 
 namespace Networking.Message
 {
@@ -28,14 +29,16 @@ namespace Networking.Message
         /// </summary>
         public byte[] Serialize()
         {
-            var offset = 0;
-            var result = new byte[1 + 2 + (2 + 2)];
-            offset = SerializeManager.SetByte(in result, (byte) MessageType, offset);
-            offset = SerializeManager.SetBytes(in result, PacketId, offset);
-            offset = SerializeManager.SetBytes(in result, (ushort)Position.x, offset);
-            SerializeManager.SetBytes(in result, (ushort)Position.y, offset);
+            const ushort length = (ushort) (1 + 2 + (2 + 2));
+            this.CreatePacket(length, out var data);
 
-            return result;
+            var offset = MessageExtensions.HEADER_LENGTH;
+            offset = MessageExtensions.SetByte(in data, (byte) MessageType, offset);
+            offset = MessageExtensions.SetBytes(in data, PacketId, offset);
+            offset = MessageExtensions.SetBytes(in data, (ushort)Position.x, offset);
+            MessageExtensions.SetBytes(in data, (ushort)Position.y, offset);
+
+            return data;
         }
 
         /// <summary>
@@ -43,11 +46,14 @@ namespace Networking.Message
         /// </summary>
         public static IMessage Deserialize(in byte[] data)
         {
-            var message = new WideFieldPositionMessage();
-            var offset = 1;
-            message.PacketId = SerializeManager.GetUInt16(data, ref offset);
-            var x = SerializeManager.GetUInt16(data, ref offset);
-            var y = SerializeManager.GetUInt16(data, ref offset);
+            var offset = MessageExtensions.HEADER_LENGTH + 1;
+            var message = new WideFieldPositionMessage
+            {
+                PacketId = MessageExtensions.GetUInt16(data, ref offset)
+            };
+
+            var x = MessageExtensions.GetUInt16(data, ref offset);
+            var y = MessageExtensions.GetUInt16(data, ref offset);
             message.Position = new Vector2Int(x, y);
 
             return message;

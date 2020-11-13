@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using Core;
 using Device.Hardware;
@@ -69,19 +70,20 @@ namespace Device
                 return;
             
             Debug.Log($"[Client] Connected: {localPoint} -> {remotePoint}");
+            _client.Receive();
             _clientConnected = true;
         }
 
         /// <summary>
         /// Перехватывает команду отправки изображения
         /// </summary>
-        public void OnSendImageRequest()
+        public IEnumerator OnSendImageRequest()
         {
             if(videoHandler.Status != VideoStatuses.Play)
                 if(!videoHandler.Play())
-                    return;
+                    yield return null;
             
-            videoHandler.Capture();
+            yield return videoHandler.Capture();
             var newIndex = _framePositionMap.Keys.GetNextFree();
             _framePositionMap.Add(newIndex, hardwareController.CurrentPosition);
 
@@ -93,8 +95,8 @@ namespace Device
                 PacketId = newIndex,
                 Image = videoHandler.SendFrame
             };
-            
-            File.WriteAllBytes(@"C:\tmp\clientImage.jpg", newMessage.Image.EncodeToJPG());
+
+            File.WriteAllBytes($@"C:\tmp\clientImage{newMessage.PacketId}.jpg", newMessage.Image.EncodeToJPG());
             
             _client.Send(newMessage.Serialize());
         }

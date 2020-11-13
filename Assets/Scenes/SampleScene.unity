@@ -793,7 +793,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dontDestroy: 0
-  autoRun: 0
+  autoRun: 1
   deviceControllers:
   - {fileID: 858799765}
 --- !u!1 &1954703008

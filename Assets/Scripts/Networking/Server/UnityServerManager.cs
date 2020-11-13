@@ -83,7 +83,7 @@ namespace Networking.Server
         /// </summary>
         private static void ResponseOnWideFieldImage(AsynchronousClient client, ImageMessage message)
         {
-            File.WriteAllBytes(@"C:\tmp\serverImage.jpg",message.Image.EncodeToJPG());
+            File.WriteAllBytes($"C:\\tmp\\serverImage{message.PacketId}.jpg",message.Image.EncodeToJPG());
 
             var newMessage = new WideFieldPositionMessage
             {

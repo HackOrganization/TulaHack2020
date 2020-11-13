@@ -8,6 +8,7 @@ using Networking.Message;
 using Networking.Message.Utils;
 using UnityAsyncHelper.Core;
 using UnityEngine;
+using Utils.Extensions;
 using EventType = Core.EventType;
 
 namespace Networking.Client
@@ -91,7 +92,7 @@ namespace Networking.Client
                 {
                     while (!IsDisposed)
                     {
-                        //_receiveDone.Reset();
+                        _receiveDone.Reset();
                         var state = new ClientStateObject(this);
                         Socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, 0, ReceiveCallback, state);
                         _receiveDone.WaitOne();
@@ -122,19 +123,24 @@ namespace Networking.Client
                 if (bytesRead > 0)
                 {
                     state.ReceivedBytes.AddRange(state.Buffer.Take(bytesRead));
-                    socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, 0, ReceiveCallback, state);
-                }
-                else
-                {
-                    if (state.ReceivedBytes.Count > 1)
+                    if (!state.MessageReceived)
                     {
-                        var messageType = (MessageType) state.ReceivedBytes[0];
-                        var message = SerializeManager.Deserialise(messageType, state.ReceivedBytes.ToArray());
-                        ThreadManager.ExecuteOnMainThread(
-                            () => EventManager.RaiseEvent(EventType.ReceivedMessage, messageType, message, state.Client));
+                        socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, 0, ReceiveCallback, state);
+                        return;
                     }
-                    state.Client._receiveDone.Set();
                 }
+                
+                if (state.MessageReceived)
+                {
+                    var messageType = (MessageType) state.ReceivedBytes[MessageExtensions.HEADER_LENGTH];
+                    ThreadManager.ExecuteOnMainThread(() =>
+                    {
+                        var message = SerializeManager.Deserialise(messageType, state.ReceivedBytes.ToArray());
+                        EventManager.RaiseEvent(EventType.ReceivedMessage, messageType, message, state.Client);
+                    });
+                }
+                state.Client._receiveDone.Set();
+                
             }
             catch (Exception e)
             {

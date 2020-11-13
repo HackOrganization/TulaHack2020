@@ -43,7 +43,6 @@ namespace Device
         private bool _isDisposed;
         private WaitUntil _untilAllReady;
         private WaitForSeconds _loopAwait;
-        private WaitForEndOfFrame _endOfFrame;
         
         public void OnStart()
         {
@@ -51,7 +50,6 @@ namespace Device
             
             _untilAllReady = new WaitUntil(()=> deviceControllers.All(d => d.IsReady));
             _loopAwait = new WaitForSeconds(Params.CAPTURE_PER_SECOND);
-            _endOfFrame = new WaitForEndOfFrame();
             
             var deviceConnectionPoints = DeviceConnectionPoints;
             for (var i = 0; i < deviceControllers.Length; i++)
@@ -83,16 +81,19 @@ namespace Device
         private IEnumerator CorRun()
         {
             yield return _untilAllReady;
+            
+            //ToDo: КОСТЫЛЬ КОСТЫЛЕЙ
+            yield return new WaitForSeconds(1);
 
+            var counter = 0;
             while (!_isDisposed)
             {
-                yield return _endOfFrame;
-                
-                WideFieldDevice.OnSendImageRequest();
+                yield return WideFieldDevice.OnSendImageRequest();
                 yield return _loopAwait;
                 
                 //ToDo: поставлено в целях теста отправки одного изображения
-                yield break;
+                if(++counter == 5)
+                    yield break;
             }
         }
         
@@ -106,7 +107,6 @@ namespace Device
             if(!messageType.GetMessageDestination().IsClientSupported())
                 return;
 
-            //ToDo: Check client equality by index
             var client = (AsynchronousClient) args[2];
             
             switch (messageType)
