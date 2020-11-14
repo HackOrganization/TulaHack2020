@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using Core;
+using Core.GameEvents;
 using Device.Data;
 using Device.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils.Extensions;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.Video
 {
@@ -50,31 +51,18 @@ namespace Device.Video
 
         public void Initialize(CameraTypes cameraType)
         {
-            EventManager.AddHandler(EventType.CameraAuthorized, OnCameraAuthorized);
+            SetSubscription();
             _cameraType = cameraType;
         }
 
         private void OnDestroy()
         {
-            EventManager.RemoveHandler(EventType.CameraAuthorized, OnCameraAuthorized);
+            ResetSubscription();
         }
 
         /// <summary>
-        /// Вызывается при авторизации камер 
-        /// </summary>
-        private void OnCameraAuthorized(object[] args)
-        {
-            var idName = cameraIdentificationSettings.GetName(_cameraType);
-            _webCamDevice = WebCamTexture.devices.GetByIdentificationName(idName);
-            _webCamTexture = new WebCamTexture(_webCamDevice.name);
-
-            Status = VideoStatuses.Authorized;
-            if(_cameraType == CameraTypes.WideField)
-                Play();
-        }
-
-        /// <summary>
-        /// 
+        /// Устанавливает необхолдимые настройки арботы с изображением после включения камеры
+        /// (необходим экземпляр изображения для работы)
         /// </summary>
         private void SetUpOnPlay()
         {
@@ -148,5 +136,39 @@ namespace Device.Video
         {
             SendFrame.SetPixels32(_webCamTexture.GetPixels32());
         }
+        
+        #region GAMEEVENTS
+        
+        /// <summary>
+        /// Устанавливает подписки на глоабльные события
+        /// </summary>
+        private void SetSubscription()
+        {
+            EventManager.AddHandler(EventType.CameraAuthorized, OnCameraAuthorized);
+        }
+        
+        /// <summary>
+        /// Отписывается от рассылки глоабльных событий
+        /// </summary>
+        private void ResetSubscription()
+        {
+            EventManager.RemoveHandler(EventType.CameraAuthorized, OnCameraAuthorized);
+        }
+        
+        /// <summary>
+        /// Вызывается при авторизации камер 
+        /// </summary>
+        private void OnCameraAuthorized(object[] args)
+        {
+            var idName = cameraIdentificationSettings.GetName(_cameraType);
+            _webCamDevice = WebCamTexture.devices.GetByIdentificationName(idName);
+            _webCamTexture = new WebCamTexture(_webCamDevice.name);
+
+            Status = VideoStatuses.Authorized;
+            if(_cameraType == CameraTypes.WideField)
+                Play();
+        }
+        
+        #endregion
     }
 }

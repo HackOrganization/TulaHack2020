@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using Core;
+﻿using Core.GameEvents;
 using Device.Utils;
 using UnityEngine;
-using EventType = Core.EventType;
+using Utils.Extensions;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.Video
 {
@@ -11,8 +11,6 @@ namespace Device.Video
     /// </summary>
     public class ObjectHandler: MonoBehaviour
     {
-        
-        
         /// <summary>
         /// Recttransfrom ObjectHandler'a
         /// </summary>
@@ -47,12 +45,12 @@ namespace Device.Video
             
             _containerResolutionRatio = _container.rect.size / _resolution;
             
-            EventManager.AddHandler(EventType.CameraDrawObject, OnObjectCaptured);
+            SetSubscription();
         }
 
         private void OnDestroy()
         {
-            EventManager.RemoveHandler(EventType.CameraDrawObject, OnObjectCaptured);
+            ResetSubscription();
         }
         
         /// <summary>
@@ -66,60 +64,25 @@ namespace Device.Video
             handlerRectTransform.SetHandlerPosition(args[1], in _containerResolutionRatio);
             handlerRectTransform.SetHandlerSize(args[2], in _containerResolutionRatio);
         }
-    }
-    
-    public static class ObjectHandlerExtensions
-    {
-        private static readonly float[] NullVector = {0f, 0f};
-        private static readonly int[] NullVectorInt = {0, 0};
-        private static readonly Vector2Int TransformVector = new Vector2Int(1, -1); 
+        
+        #region GAMEEVENTS
         
         /// <summary>
-        /// Устанавливает новую позицию объекта захвата, если это необходимо (координаты не нулевые)
+        /// Устанавливает подписки на глоабльные события
         /// </summary>
-        public static void SetHandlerPosition(this RectTransform rectTransform, object arg, in Vector2 containerResolutionRatio)
+        private void SetSubscription()
         {
-            var newPosition = arg.AutoSizedVector(in containerResolutionRatio);
-            if (newPosition.IsNullPosition())
-                return;
-
-            rectTransform.anchoredPosition = newPosition * TransformVector; 
-        }
-
-        /// <summary>
-        /// Устанавливает новый размер объекта, если это необходимо (если размер не 0, 0) 
-        /// </summary>
-        public static void SetHandlerSize(this RectTransform rectTransform, object arg,
-            in Vector2 containerResolutionRatio)
-        {
-            if (((Vector2Int) arg).IsNullSize())
-                return;
-            
-            var size = arg.AutoSizedVector(in containerResolutionRatio);
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x); 
-            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y); 
+            EventManager.AddHandler(EventType.CameraDrawObject, OnObjectCaptured);
         }
         
         /// <summary>
-        /// Проверяет, является ли теущая позиция нулевой 
+        /// Отписывается от рассылки глоабльных событий
         /// </summary>
-        public static bool IsNullPosition(this Vector2 position)
-            => NullVector.Where((t, i) => position[i] < t).Any(); 
-        
-        /// <summary>
-        /// Проверяет, является ли текущий размер нулевым 
-        /// </summary>
-        public static bool IsNullSize(this Vector2Int position)
-            => NullVectorInt.Where((t, i) => position[i] == t).Any();
-        
-        /// <summary>
-        /// Преобразует переданные данные типа Vector2Int в Vector2 и скалирует по соотноешнию _containerResolutionRatio
-        /// </summary>
-        public static Vector2 AutoSizedVector(this object arg, in Vector2 containerResolutionRatio)
+        private void ResetSubscription()
         {
-            var value = (Vector2) (Vector2Int) arg;
-            value.Scale(containerResolutionRatio);
-            return value;
+            EventManager.RemoveHandler(EventType.CameraDrawObject, OnObjectCaptured);
         }
+        
+        #endregion
     }
 }

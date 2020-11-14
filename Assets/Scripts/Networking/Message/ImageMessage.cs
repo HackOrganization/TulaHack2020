@@ -15,11 +15,6 @@ namespace Networking.Message
         public MessageType MessageType { get; private set; }
 
         /// <summary>
-        /// Идентификатор кадра, который мы отправили в MotionDetection. Требует 2 байта
-        /// </summary>
-        public ushort PacketId;
-
-        /// <summary>
         /// Изображение.
         /// Передается размер (Требует на каждую координату по 2 байта)
         /// и сами байты изображения
@@ -37,13 +32,12 @@ namespace Networking.Message
         public byte[] Serialize()
         {
             var imageBytes = Image.EncodeToJPG();
-            //MessageType + PacketId + (Image.Width + Image.Height + Image.JPG.Length)
-            var length = (ushort) (1 + 2 + (2 + 2 + imageBytes.Length));
+            //MessageType + (Image.Width + Image.Height + Image.JPG.Length)
+            var length = (ushort) (1 + (2 + 2 + imageBytes.Length));
             this.CreateMessage(length, out var data);
 
             var offset = MessageExtensions.HEADER_LENGTH;
             offset = MessageExtensions.SetByte(in data, (byte) MessageType, offset);
-            offset = MessageExtensions.SetBytes(in data, PacketId, offset);
             offset = MessageExtensions.SetBytes(in data, (ushort) Image.width, offset);
             offset = MessageExtensions.SetBytes(in data, (ushort) Image.height, offset);
             MessageExtensions.SetBytes(in data, imageBytes, offset);
@@ -57,10 +51,7 @@ namespace Networking.Message
         public static IMessage Deserialize(in byte[] data)
         {
             var offset = MessageExtensions.HEADER_LENGTH;
-            var message = new ImageMessage((MessageType) data[offset++])
-            {
-                PacketId = MessageExtensions.GetUInt16(data, ref offset)
-            };
+            var message = new ImageMessage((MessageType) data[offset++]);
             
             var width = MessageExtensions.GetUInt16(data, ref offset);
             var height = MessageExtensions.GetUInt16(data, ref offset);

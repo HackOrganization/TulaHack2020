@@ -37,13 +37,8 @@ namespace Device.Hardware.HighLevel
             if(CameraType != cameraType)
                 return;
 
-            var frameId = (ushort) args[1];
-            var lastStep = _currentPosition;
-            if (FramePositionMap.ContainsKey(frameId))
-                lastStep = FramePositionMap[frameId].x; //Шаг, на котором была передана картинка с идентификатором frameId
-            FramePositionMap.Remove(frameId);
-            
-            var position = (Vector2Int) args[2];
+            var position = (Vector2Int) args[1];
+            //ToDo: use CashedDevicePosition to get new Device Step
             if(position == PassiveHuntingFlag)
                 return;
                 

@@ -3,9 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Core;
+using Core.GameEvents;
 using Core.OrderStart;
 using UnityEngine;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.UI
 {

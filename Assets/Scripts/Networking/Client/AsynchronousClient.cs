@@ -4,13 +4,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using Core;
+using Core.GameEvents;
 using Networking.Message;
 using Networking.Message.Utils;
 using Networking.Utils;
 using UnityAsyncHelper.Core;
 using UnityEngine;
 using Utils.Extensions;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Networking.Client
 {
@@ -76,9 +77,8 @@ namespace Networking.Client
             {
                 client.Socket.EndConnect(ar);
 
-                ThreadManager.ExecuteOnMainThread(
-                    () => EventManager.RaiseEvent(EventType.ClientConnected,
-                        client.IsClientSide, client.Socket.LocalEndPoint, client.Socket.RemoteEndPoint));
+                EventManager.RaiseOnMainThread(EventType.ClientConnected,
+                    client.IsClientSide, client.Socket.LocalEndPoint, client.Socket.RemoteEndPoint);
                 client._connectDone.Set();
             }
             catch (SocketException se)
@@ -159,7 +159,6 @@ namespace Networking.Client
                 else
                 {
                     socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, 0, ReceiveCallback, state);
-                    Debug.Log("Receive continued");
                 }
             }
             catch (SocketException se)
@@ -219,8 +218,8 @@ namespace Networking.Client
             try
             {
                 var client = (AsynchronousClient) ar.AsyncState;
-                var bytesSend = client.Socket.EndSend(ar);
                 
+                client.Socket.EndSend(ar);
                 client._sendDone.Set();
             }
             catch (Exception e)
@@ -288,8 +287,10 @@ namespace Networking.Client
         {
             if (!IsDisposed)
             {
-                EventManager.RaiseEvent(EventType.EndWork, true);
+                EventManager.RaiseOnMainThread(EventType.EndWork, true);
                 IsDisposed = true;
+                
+                Debug.Log($"Closing socket: {Socket.LocalEndPoint} -> {Socket.RemoteEndPoint}");
                 
                 if (disposing)
                     Close(sayGoodbye);
@@ -310,8 +311,6 @@ namespace Networking.Client
         /// </summary>
         public void SafeDispose()
         {
-            Debug.Log($"Closing socket: {Socket.LocalEndPoint} -> {Socket.RemoteEndPoint}");
-            
             Dispose(true, false);
             GC.SuppressFinalize(this);
         }

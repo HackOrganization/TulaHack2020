@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityAsyncHelper.Core;
 
-namespace Core 
+namespace Core.GameEvents 
 {
     /// <summary>
     /// Типы событий
@@ -15,7 +15,7 @@ namespace Core
         ClientConnected, //IsClientSide, LocalEndPoint, RemoteEndPoint
         ReceivedMessage, //MessageType, IMessage, AsynchronousClient
         
-        DeviceGoPosition, //CameraTypes, PacketId[ushort], Position[Vector2Int]
+        DeviceGoPosition, //CameraTypes, Position[Vector2Int]
         CameraDrawObject,//CameraTypes, Position[Vector2Int], Size[Vector2Int], 
         CaptureNewImage, //CameraTypes
         

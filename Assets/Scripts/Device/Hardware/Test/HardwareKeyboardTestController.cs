@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Core;
+using Core.GameEvents;
 using Device.Hardware.HighLevel;
 using Device.Hardware.LowLevel;
 using Device.Hardware.LowLevel.Utils.Communication;
 using Device.Utils;
 using UnityEngine;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.Hardware.Test
 {

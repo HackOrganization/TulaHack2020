@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Net;
 using Core;
+using Core.GameEvents;
 using Networking.Client;
 using Networking.Message;
 using UnityAsyncHelper.Core;
 using UnityEngine;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.Networking
 {
@@ -27,17 +28,10 @@ namespace Device.Networking
 
         protected NeuralNetworkBaseClient(IPEndPoint endPoint)
         {
-            EventManager.AddHandler(EventType.ClientConnected, OnConnected);
-            EventManager.AddHandler(EventType.ReceivedMessage, OnReceived);
+            SetSubscription();
             
             ThreadManager.AsyncExecute(() => Client = AsynchronousClient.Connect(endPoint), null);
-            Debug.Log("Connection requested");
         }
-
-        /// <summary>
-        /// При подключении клиента
-        /// </summary>
-        protected abstract void OnConnected(object[] args);
 
         /// <summary>
         /// Отправляет сообщение
@@ -50,10 +44,37 @@ namespace Device.Networking
             Client.Send(message.Serialize());
         }
 
+        #region GAMEEVENTS
+        
+        /// <summary>
+        /// Устанавливает подписки на глоабльные события
+        /// </summary>
+        private void SetSubscription()
+        {
+            EventManager.AddHandler(EventType.ClientConnected, OnConnected);
+            EventManager.AddHandler(EventType.ReceivedMessage, OnReceived);
+        }
+        
+        /// <summary>
+        /// Отписывается от рассылки глоабльных событий
+        /// </summary>
+        private void ResetSubscription()
+        {
+            EventManager.RemoveHandler(EventType.ClientConnected, OnConnected);
+            EventManager.RemoveHandler(EventType.ReceivedMessage, OnReceived);
+        }
+        
+        /// <summary>
+        /// При подключении клиента
+        /// </summary>
+        protected abstract void OnConnected(object[] args);
+        
         /// <summary>
         /// Перехватывает обработку получения сообщения 
         /// </summary>
         protected abstract void OnReceived(object[] args);
+        
+        #endregion
         
         #region DISPOSE
 
@@ -71,15 +92,12 @@ namespace Device.Networking
         {
             if (!IsDisposed)
             {
-                EventManager.RaiseEvent(EventType.EndWork, true);
+                //EventManager.RaiseOnMainThread(EventType.EndWork, true);
                 IsDisposed = true;
                 
                 if (disposing)
                 {
-                    Debug.Log("Dispose");
-                    
-                    EventManager.RemoveHandler(EventType.ClientConnected, OnConnected);
-                    EventManager.RemoveHandler(EventType.ReceivedMessage, OnReceived);
+                    ResetSubscription();
                     Client?.Dispose();
                 }
             }

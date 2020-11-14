@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Core;
+using Core.GameEvents;
 using Device.Hardware.HighLevel.Utils;
 using Device.Hardware.LowLevel;
 using Device.Utils;
 using UnityEngine;
 using Utils.Extensions;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.Hardware.HighLevel
 {
@@ -40,33 +41,49 @@ namespace Device.Hardware.HighLevel
         /// </summary>
         public ILastHandledPosition LastHandledPosition { get; protected set; }
 
-        protected SerialPortController SerialPortController;
-        protected readonly Dictionary<ushort, Vector2Int> FramePositionMap = new Dictionary<ushort, Vector2Int>();
+        private SerialPortController _serialPortController;
+        protected Vector2Int CashedDevicePosition;
 
         public virtual void Initialize(SerialPortController serialPortController)
         {
-            SerialPortController = serialPortController;
-            EventManager.AddHandler(EventType.DeviceGoPosition, OnNewPositionCaptured);
+            _serialPortController = serialPortController;
+            SetSubscription();
 
             IsInitialized = true;
         }
 
         /// <summary>
+        /// Фиксирует текущую позицию устройства, возвращает ключ в словаре 
+        /// </summary>
+        public void FixPosition()
+        {
+            CashedDevicePosition = CurrentPosition;
+        }
+        
+        #region GAMEEVENTS
+        
+        /// <summary>
+        /// Устанавливает подписки на глоабльные события
+        /// </summary>
+        private void SetSubscription()
+        {
+            EventManager.AddHandler(EventType.DeviceGoPosition, OnNewPositionCaptured);
+        }
+        
+        /// <summary>
+        /// Отписывается от рассылки глоабльных событий
+        /// </summary>
+        private void ResetSubscription()
+        {
+            EventManager.RemoveHandler(EventType.DeviceGoPosition, OnNewPositionCaptured);
+        }
+        
+        /// <summary>
         /// Получение команды двигаться в определенную координату 
         /// </summary>
         protected abstract void OnNewPositionCaptured(object[] args);
-
-        /// <summary>
-        /// Фиксирует текущую позицию устройства, возвращает ключ в словаре 
-        /// </summary>
-        public ushort FixPosition()
-        {
-            //ToDo: Удалить нахер словарь, отправлять только кадр по готовности, хранить только одну запись
-            var newIndex = FramePositionMap.Keys.GetNextFree();
-            FramePositionMap.Add(newIndex, CurrentPosition);
-
-            return newIndex;
-        }
+        
+        #endregion
         
         #region DISPOSE
 
@@ -86,8 +103,8 @@ namespace Device.Hardware.HighLevel
                 {
                     //Это ссылка на объект HardwareController._serialPortController
                     //Вызов _serialPortController.Dispose происходит в HardwareController.OnDisable()
-                    SerialPortController = null;
-                    EventManager.RemoveHandler(EventType.DeviceGoPosition, OnNewPositionCaptured);
+                    ResetSubscription();
+                    _serialPortController = null;
                 }
             }
         }

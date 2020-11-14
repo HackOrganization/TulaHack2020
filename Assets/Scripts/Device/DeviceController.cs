@@ -43,7 +43,7 @@ namespace Device
         /// <summary>
         /// Перехватывает команду отправки изображения
         /// </summary>
-        public void OnSendImageRequest(ushort packetId)
+        public void OnSendImageRequest()
         {
             if(videoHandler.Status != VideoStatuses.Play)
                 if(!videoHandler.Play())
@@ -56,7 +56,6 @@ namespace Device
                     ? MessageType.WideFieldImage
                     : MessageType.TightFieldImage)
             {
-                PacketId = packetId,
                 Image = videoHandler.SendFrame
             };
 
