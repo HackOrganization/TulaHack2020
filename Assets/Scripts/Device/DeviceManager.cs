@@ -121,7 +121,7 @@ namespace Device
                 yield return _loopAwait;
                 
                 //ToDo: поставлено в целях теста отправки одного изображения
-                Debug_PrintInfo(in counter);
+                Debug_PrintInfo(counter++);
                 
                 if(!ComponentsAreReady())
                     //ToDo: dispose all controllers (Neural, AsyncClient, Hardware...)

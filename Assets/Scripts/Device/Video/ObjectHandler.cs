@@ -1,4 +1,5 @@
-﻿using Core;
+﻿using System.Linq;
+using Core;
 using Device.Utils;
 using UnityEngine;
 using EventType = Core.EventType;
@@ -10,7 +11,7 @@ namespace Device.Video
     /// </summary>
     public class ObjectHandler: MonoBehaviour
     {
-        private static readonly Vector2Int TransformVector = new Vector2Int(1, -1); 
+        
         
         /// <summary>
         /// Recttransfrom ObjectHandler'a
@@ -62,20 +63,47 @@ namespace Device.Video
             if(_cameraType != (CameraTypes)args[0])
                 return;
 
-            var size = AutoSizedVector(args[2]);
-            handlerRectTransform.anchoredPosition = AutoSizedVector(args[1]) * TransformVector;
+            handlerRectTransform.SetHandlerPosition(args[1], in _containerResolutionRatio);
             
+            var size = args[2].AutoSizedVector(in _containerResolutionRatio);
             handlerRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x); 
             handlerRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y); 
         }
+    }
+    
+    public static class ObjectHandlerExtensions
+    {
+        private static readonly float[] NullVector = {0f, 0f};
+        private static readonly Vector2Int TransformVector = new Vector2Int(1, -1); 
+        
+        /// <summary>
+        /// Устанавливает новую позицию объекта захвата, если это необходимо (координаты не нулевые)
+        /// </summary>
+        public static void SetHandlerPosition(this RectTransform rectTransform, object arg, in Vector2 containerResolutionRatio)
+        {
+            var newPosition = arg.AutoSizedVector(in containerResolutionRatio);
+            if (IsNullPosition(newPosition))
+            {
+                Debug.Log("Not set!");
+                return;
+            }
 
+            rectTransform.anchoredPosition = newPosition * TransformVector; 
+        }
+        
+        /// <summary>
+        /// Проверяет, является ли теущая позиция нулевой 
+        /// </summary>
+        private static bool IsNullPosition(Vector2 position)
+            => NullVector.Where((t, i) => position[i] < t).Any();
+        
         /// <summary>
         /// Преобразует переданные данные типа Vector2Int в Vector2 и скалирует по соотноешнию _containerResolutionRatio
         /// </summary>
-        private Vector2 AutoSizedVector(object arg)
+        public static Vector2 AutoSizedVector(this object arg, in Vector2 containerResolutionRatio)
         {
             var value = (Vector2) (Vector2Int) arg;
-            value.Scale(_containerResolutionRatio);
+            value.Scale(containerResolutionRatio);
             return value;
         }
     }

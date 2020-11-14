@@ -91,7 +91,7 @@ namespace Networking.Client
                         return;
                     }
                     
-                    Debug.Log("Next attempt....");
+                    Debug.Log($"Next attempt ({client._connectAttempts})....");
                     Thread.Sleep(Params.RETRY_SETTING_CONNECTION_TIMEOUT);
                     client.Socket.BeginConnect(connectionObject.RemoteEndPoint, ConnectCallback, connectionObject);
                     
