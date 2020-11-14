@@ -33,7 +33,7 @@ namespace Device.Hardware.Test.HighLevel.Image
                 LowLevelWideFieldParams.WIDEFIELD_MAX_STEPS);
             PositionController.SetUp(new Vector2Int(azimuthStep, 0));
             
-            //EventManager.RaiseEvent(EventType.DeviceGoPosition,CameraTypes.TightField, PositionCommandType.Auto, objectImagePosition, azimuthStep);
+            EventManager.RaiseEvent(EventType.DeviceGoPosition,CameraTypes.TightField, SourceCommandType.Auto, objectImagePosition, azimuthStep);
         }
     }
 }

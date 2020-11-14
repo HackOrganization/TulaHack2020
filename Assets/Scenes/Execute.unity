@@ -1130,7 +1130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 931575d821a64b298acd3f122452253f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  execute: 0
+  execute: 1
   cameraType: 1
   videoHandler: {fileID: 937409900}
 --- !u!1 &954391453
@@ -1463,7 +1463,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1129937110
 MonoBehaviour:
   m_ObjectHideFlags: 0
