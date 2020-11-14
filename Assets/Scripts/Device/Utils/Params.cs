@@ -6,4 +6,14 @@
         
         public const byte WIDEFIELD_DETECTION_PROBABILITY = 50;
     }
+
+    public static class WideFieldParams
+    {
+        public static SourceCommandType SourceCommandType = SourceCommandType.Auto;
+    }
+    
+    public static class TightFieldParams
+    {
+        public static SourceCommandType SourceCommandType = SourceCommandType.Auto;
+    } 
 }

@@ -23,14 +23,17 @@ namespace Device.Hardware.Test.HighLevel.Image
             if(CameraType != cameraType)
                 return;
             
-            var objectImagePosition = (Vector2Int) args[1];
+            if((SourceCommandType) args[1] != SourceCommandType.Auto)
+                return;
+            
+            var objectImagePosition = (Vector2Int) args[2];
             var azimuthStep = objectImagePosition.AzimuthWideFieldCameraStep(CashedDevicePosition);
             azimuthStep = Mathf.Clamp(azimuthStep, 
                 LowLevelWideFieldParams.WIDEFIELD_MIN_STEPS,
                 LowLevelWideFieldParams.WIDEFIELD_MAX_STEPS);
             PositionController.SetUp(new Vector2Int(azimuthStep, 0));
             
-            //EventManager.RaiseEvent(EventType.DeviceGoPosition,CameraTypes.TightField, objectImagePosition, stepPosition);
+            //EventManager.RaiseEvent(EventType.DeviceGoPosition,CameraTypes.TightField, PositionCommandType.Auto, objectImagePosition, azimuthStep);
         }
     }
 }

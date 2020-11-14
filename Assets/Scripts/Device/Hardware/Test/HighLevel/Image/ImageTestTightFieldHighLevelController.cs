@@ -23,8 +23,11 @@ namespace Device.Hardware.Test.HighLevel.Image
             if(CameraType != cameraType)
                 return;
 
-            var objectImagePosition = (Vector2Int) args[1];
-            var wideFieldAzimuthStep = (int) args[2];
+            if((SourceCommandType) args[1] != SourceCommandType.Auto)
+                return;
+            
+            var objectImagePosition = (Vector2Int) args[2];
+            var wideFieldAzimuthStep = (int) args[3];
             
             var tightAzimuthStep = wideFieldAzimuthStep.AzimuthTightFieldCameraStep();
             var elevationStep = objectImagePosition.ElevationTightFieldCameraStep();

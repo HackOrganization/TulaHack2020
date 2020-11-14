@@ -19,7 +19,7 @@ namespace Device
     public class DeviceManager: Singleton<DeviceManager>, IStarter
     {
         [Header("Settings")] 
-        [SerializeField] private bool autoRun;
+        
         
         [Header("Контроллеры устройств")]
         [SerializeField] private DeviceController[] deviceControllers;
@@ -43,6 +43,7 @@ namespace Device
 
         private bool _isDisposed;
         private bool _captureLocked;
+        private bool _debugInitialized;
         private WaitUntil _untilAllReady;
         private WaitUntil _notCaptureLocked;
         private DebugController _debugController;
@@ -53,6 +54,7 @@ namespace Device
         public void OnStart()
         {
             _debugController = FindObjectOfType<DebugController>();
+            _debugInitialized = _debugController != null;
             
             Application.targetFrameRate = 300;
             SetSubscription();
@@ -66,8 +68,7 @@ namespace Device
             
             hardwareController.Initialize();
 
-            if (autoRun)
-                Run();
+            StartCoroutine(EWideFiledRun());
         }
         
         private void OnDisable()
@@ -83,14 +84,6 @@ namespace Device
         private bool ComponentsAreReady()
         {
             return deviceControllers.All(d => d.IsReady) && hardwareController.IsReady;
-        }
-
-        /// <summary>
-        /// Запускает цикличную работу устройств
-        /// </summary>
-        public void Run()
-        {
-            StartCoroutine(EWideFiledRun());
         }
         
         /// <summary>
@@ -110,7 +103,8 @@ namespace Device
                 hardwareController.WideFieldHighLevelController.CashPosition();
                 WideFieldDevice.OnSendImageRequest();
                 
-                _debugController.Log();
+                if(_debugInitialized)
+                    _debugController.Log();
                 yield return _notCaptureLocked;
                 
                 if(!ComponentsAreReady())

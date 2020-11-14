@@ -56,7 +56,7 @@
         /// <summary>
         /// Число шагов за полный круг (по вертикали) (АБСОЛЮТНОЕ ЗНАЧЕНИЕ)
         /// </summary>
-        public const int CYCLE_STEPS_Y = 2217;
+        public const int CYCLE_STEPS_Y = 6800;//6068//6590
         
         /// <summary>
         /// Минимальное время прохождения полного круга по горизонтали (на максимальной скорости) (в секундах)
@@ -66,7 +66,7 @@
         /// <summary>
         /// Минимальное время прохождения полного круга по горизонтали (на максимальной скорости) (в секундах)
         /// </summary>
-        public const float FULL_CYCLE_MIN_TIME_Y = 7.94f;
+        public const float FULL_CYCLE_MIN_TIME_Y = 67.37f;
         
         /// <summary>
         /// Амплитуда шаговика (УПК X)
@@ -81,7 +81,7 @@
         /// <summary>
         /// Амплитуда шаговика (УПК Y)
         /// </summary>
-        public const int TIGHTFIELD_MIN_STEPS_Y = -290;
+        public const int TIGHTFIELD_MIN_STEPS_Y = -950;
         
         /// <summary>
         /// Максимальная точка шаговика (ШПК)

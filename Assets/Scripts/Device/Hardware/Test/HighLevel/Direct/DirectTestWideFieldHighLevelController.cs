@@ -18,8 +18,11 @@ namespace Device.Hardware.Test.HighLevel.Direct
             var cameraType = (CameraTypes) args[0];
             if(CameraType != cameraType)
                 return;
-
-            var position = (Vector2Int) args[1];
+            
+            if((SourceCommandType) args[1] != SourceCommandType.Manual)
+                return;
+            
+            var position = (Vector2Int) args[2];
             PositionController.SetUp(position);
         }
     }
