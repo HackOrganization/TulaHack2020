@@ -37,8 +37,9 @@ namespace Networking.Message
         public byte[] Serialize()
         {
             var imageBytes = Image.EncodeToJPG();
+            //MessageType + PacketId + (Image.Width + Image.Height + Image.JPG.Length)
             var length = (ushort) (1 + 2 + (2 + 2 + imageBytes.Length));
-            this.CreatePacket(length, out var data);
+            this.CreateMessage(length, out var data);
 
             var offset = MessageExtensions.HEADER_LENGTH;
             offset = MessageExtensions.SetByte(in data, (byte) MessageType, offset);

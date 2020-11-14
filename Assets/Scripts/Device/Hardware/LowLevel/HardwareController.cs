@@ -21,10 +21,9 @@ namespace Device.Hardware.LowLevel
         [SerializeField] protected CameraBaseController tightFieldController;
 
         /// <summary>
-        /// Порт определен, устройства откалиброваны. 
+        /// Порт определен, устройства откалиброваны, объект не разрушен 
         /// </summary>
-        public bool IsInitialized => CameraBaseControllers.All(c => c.IsInitialized);
-
+        public bool IsReady => CameraBaseControllers.All(c => c.IsInitialized && !c.IsDisposed);
         /// <summary>
         /// Перечисление наводящихся камер
         /// </summary>

@@ -40,6 +40,11 @@ def GetBytesFromUshort(value: int):
     return value.to_bytes(2, byteorder='little', signed=False)
 
 
+# Возвращает массив байтов, эквивалетных значению типа Short
+def GetBytesFromShort(value: int):
+    return value.to_bytes(2, byteorder='little', signed=True)
+
+
 # Возвращает массив байтов, эквивалентых значению типа byte
 def GetBytesFromByteInteger(value: int):
     return value.to_bytes(1, byteorder='little')

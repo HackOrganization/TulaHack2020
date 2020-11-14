@@ -89,7 +89,7 @@ class ClientThread(Thread):
         __receiveEnabled = True
         while __receiveEnabled and self.SocketListener.ListenerEnabled:
             try:
-                print("Awaiting message")
+                # print("Awaiting message")
                 receiveObject = ReceiveObject()
                 while not receiveObject.IsSameLength():
                     receiveObject.buffer.extend(self.Client.recv(Params.BUFFER_SIZE))

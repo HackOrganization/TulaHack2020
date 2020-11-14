@@ -41,7 +41,7 @@ namespace Device.Hardware.HighLevel
         public ILastHandledPosition LastHandledPosition { get; protected set; }
 
         protected SerialPortController SerialPortController;
-        public readonly Dictionary<ushort, Vector2Int> FramePositionMap = new Dictionary<ushort, Vector2Int>();
+        protected readonly Dictionary<ushort, Vector2Int> FramePositionMap = new Dictionary<ushort, Vector2Int>();
 
         public virtual void Initialize(SerialPortController serialPortController)
         {
@@ -78,6 +78,9 @@ namespace Device.Hardware.HighLevel
         {
             if (!IsDisposed)
             {
+                EventManager.RaiseEvent(EventType.EndWork, true);
+                IsDisposed = true;
+                
                 if (disposing)
                 {
                     //Это ссылка на объект HardwareController._serialPortController
@@ -85,7 +88,6 @@ namespace Device.Hardware.HighLevel
                     SerialPortController = null;
                     EventManager.RemoveHandler(EventType.DeviceGoPosition, OnNewPositionCaptured);
                 }
-                IsDisposed = true;
             }
         }
         

@@ -24,7 +24,7 @@ namespace Device
         /// Фиксирует, что устройство готово к работе.
         /// Для этого необходиом, чтобы было создано соединение с сервером и камера подключилась
         /// </summary>
-        public bool IsReady => _client.Connected && videoHandler.IsAuthorized;
+        public bool IsReady => _client.Connected && videoHandler.IsAuthorized && !_client.IsAnyDisposed;
         
         private NeuralNetworkBaseClient _client;
          

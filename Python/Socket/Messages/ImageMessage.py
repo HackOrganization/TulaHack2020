@@ -1,8 +1,8 @@
 import Socket.Messages.Utils.Params as Params
 import Socket.Utils.ByteConverter as ByteConverter
 
-from Socket.Messages.Utils.MessageTypes import MessageTypes
 from Socket.Messages.Message import Message
+from Socket.Messages.Utils.MessageTypes import MessageTypes
 
 
 # Класс сообщения картинки с одной из камер
@@ -18,8 +18,7 @@ class ImageMessage(Message):
         self.PacketId = ByteConverter.GetInteger(data, 5, 2, False)
         self.Width = ByteConverter.GetInteger(data, 7, 2, False)
         self.Height = ByteConverter.GetInteger(data, 9, 2, False)
-        # ToDo: Get image and convert it
-        self.JpgImageData = bytes(data[11:])#ByteConverter.GetBytes(data, 11)
+        self.JpgImageData = bytes(data[11:])  # ByteConverter.GetBytes(data, 11)
 
     def Serialize(self):
         returnArray = bytearray()
@@ -29,7 +28,6 @@ class ImageMessage(Message):
         returnArray.extend(ByteConverter.GetBytesFromUshort(self.PacketId))
         returnArray.extend(ByteConverter.GetBytesFromUshort(self.Width))
         returnArray.extend(ByteConverter.GetBytesFromUshort(self.Height))
-        # ToDo: Get image and convert it
         returnArray.extend(self.JpgImageData)
         return returnArray
 

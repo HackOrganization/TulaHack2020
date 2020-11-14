@@ -1,4 +1,5 @@
-﻿using Networking.Message.Utils;
+﻿
+using Networking.Message.Utils;
 using UnityEngine;
 using Utils.Extensions;
 
@@ -23,19 +24,27 @@ namespace Networking.Message
         /// Пиксельные координаты изображения. Требует на каждую координату по 2 байта
         /// </summary>
         public Vector2Int Position;
+
+        /// <summary>
+        /// Размеры изображения
+        /// </summary>
+        public Vector2Int Size;
         
         /// <summary>
         /// Сериализует Сообщение в массив байтов 
         /// </summary>
         public byte[] Serialize()
         {
-            const ushort length = (ushort) (1 + 2 + (2 + 2));
-            this.CreatePacket(length, out var data);
+            //MessageType + PacketId + (Position.x + Position.y) + (Size.x + Size.y)
+            const ushort length = (ushort) (1 + 2 + (2 + 2) + (2 + 2));
+            this.CreateMessage(length, out var data);
 
             var offset = MessageExtensions.HEADER_LENGTH;
             offset = MessageExtensions.SetByte(in data, (byte) MessageType, offset);
             offset = MessageExtensions.SetBytes(in data, PacketId, offset);
             offset = MessageExtensions.SetBytes(in data, (ushort)Position.x, offset);
+            offset = MessageExtensions.SetBytes(in data, (ushort)Size.x, offset);
+            offset = MessageExtensions.SetBytes(in data, (ushort)Size.y, offset);
             MessageExtensions.SetBytes(in data, (ushort)Position.y, offset);
 
             return data;
@@ -52,10 +61,14 @@ namespace Networking.Message
                 PacketId = MessageExtensions.GetUInt16(data, ref offset)
             };
 
-            var x = MessageExtensions.GetUInt16(data, ref offset);
-            var y = MessageExtensions.GetUInt16(data, ref offset);
-            message.Position = new Vector2Int(x, y);
+            var positionX = MessageExtensions.GetInt16(data, ref offset);
+            var positionY = MessageExtensions.GetInt16(data, ref offset);
+            message.Position = new Vector2Int(positionX, positionY);
 
+            var sizeX = MessageExtensions.GetUInt16(data, ref offset);
+            var sizeY = MessageExtensions.GetUInt16(data, ref offset);
+            message.Size = new Vector2Int(sizeX, sizeY);
+            
             return message;
         }
     }

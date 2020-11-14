@@ -29,8 +29,9 @@ namespace Networking.Message
         /// </summary>
         public byte[] Serialize()
         {
+            //MessageType + SendGoodbyeMessage
             const ushort length = (ushort) (1 + sizeof(bool));
-            this.CreatePacket(length, out var data);
+            this.CreateMessage(length, out var data);
             
             var offset = MessageExtensions.HEADER_LENGTH;
             offset = MessageExtensions.SetByte(in data, (byte) MessageType, offset);

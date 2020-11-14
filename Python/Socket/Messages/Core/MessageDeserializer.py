@@ -10,7 +10,7 @@ def Deserialize(messageType: MessageTypes, data: bytearray):
         return CloseConnectionMessage.Deserialize(data)
     if messageType == MessageTypes.WideFieldImage or messageType == MessageTypes.TightFieldImage:
         message = ImageMessage.Deserialize(data)
-        print(f"Received image length: {len(message.JpgImageData)}")
+        # print(f"Received image length: {len(message.JpgImageData)}")
         return message
 
     return Message.Deserialize()

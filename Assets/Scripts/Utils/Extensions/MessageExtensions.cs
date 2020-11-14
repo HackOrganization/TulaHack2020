@@ -7,7 +7,10 @@ namespace Utils.Extensions
     {
         public const int HEADER_LENGTH = 4;
         
-        public static void CreatePacket(this IMessage message, int dataLength, out byte[] data)
+        /// <summary>
+        /// Создает заголовок сообщения, фиксируя в нем длину сообщения
+        /// </summary>
+        public static void CreateMessage(this IMessage message, int dataLength, out byte[] data)
         {
             dataLength += HEADER_LENGTH;
             data = new byte[dataLength];
@@ -21,6 +24,17 @@ namespace Utils.Extensions
         {
             const int length = sizeof(ushort);
             var value = BitConverter.ToUInt16(source, offset);
+            offset += length;
+            return value;
+        }
+        
+        /// <summary>
+        /// Возвращает занчение типа UInt16 из массива байтов начиная с offset
+        /// </summary>
+        public static short GetInt16(in byte[] source, ref int offset)
+        {
+            const int length = sizeof(ushort);
+            var value = BitConverter.ToInt16(source, offset);
             offset += length;
             return value;
         }
@@ -81,7 +95,7 @@ namespace Utils.Extensions
         }
         
         /// <summary>
-        /// Добавляет в массив байтов значение Value типа UInt16 и возвращает новую позицию головки записи
+        /// Добавляет в массив байтов значение Value типа Int32 и возвращает новую позицию головки записи
         /// </summary>
         public static int SetBytes(in byte[] destination, int value, int offset = 0, int length = 0)
         {
@@ -92,7 +106,7 @@ namespace Utils.Extensions
         }
         
         /// <summary>
-        /// Добавляет в массив байтов значение Value типа UInt16 и возвращает новую позицию головки записи
+        /// Добавляет в массив байтов значение Value типа Bool и возвращает новую позицию головки записи
         /// </summary>
         public static int SetBytes(in byte[] destination, bool value, int offset = 0, int length = 0)
         {

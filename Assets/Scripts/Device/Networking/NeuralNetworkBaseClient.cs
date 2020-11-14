@@ -29,17 +29,6 @@ namespace Device.Networking
         {
             EventManager.AddHandler(EventType.ClientConnected, OnConnected);
             EventManager.AddHandler(EventType.ReceivedMessage, OnReceived);
-
-            //Client = AsynchronousClient.Connect(endPoint);
-            // object[] SetUpConnection()
-            // {
-            //     return new object[] {AsynchronousClient.Connect(endPoint)};
-            // }
-            //
-            // void SetUpConnectionCallback(object[] args)
-            // {
-            //     Client = (AsynchronousClient) args[0];
-            // }
             
             ThreadManager.AsyncExecute(() => Client = AsynchronousClient.Connect(endPoint), null);
             Debug.Log("Connection requested");
@@ -55,6 +44,9 @@ namespace Device.Networking
         /// </summary>
         public virtual void SendMessage(IMessage message)
         {
+            if(IsDisposed)
+                return;
+            
             Client.Send(message.Serialize());
         }
 
@@ -66,6 +58,11 @@ namespace Device.Networking
         #region DISPOSE
 
         /// <summary>
+        /// Флаг, что асинхронный клиент или его обертка (текущий класс) были разрушены
+        /// </summary>
+        public bool IsAnyDisposed => IsDisposed || Client.IsDisposed;
+        
+        /// <summary>
         /// Флаг окончания работы.
         /// </summary>
         public bool IsDisposed { get; protected set; }
@@ -74,6 +71,9 @@ namespace Device.Networking
         {
             if (!IsDisposed)
             {
+                EventManager.RaiseEvent(EventType.EndWork, true);
+                IsDisposed = true;
+                
                 if (disposing)
                 {
                     Debug.Log("Dispose");
@@ -82,7 +82,6 @@ namespace Device.Networking
                     EventManager.RemoveHandler(EventType.ReceivedMessage, OnReceived);
                     Client?.Dispose();
                 }
-                IsDisposed = true;
             }
         }
         
