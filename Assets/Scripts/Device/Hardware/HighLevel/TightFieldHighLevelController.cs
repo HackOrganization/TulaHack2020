@@ -47,13 +47,32 @@ namespace Device.Hardware.HighLevel
             if(CameraType != cameraType)
                 return;
 
-            var objectImagePosition = (Vector2Int) args[1];
-            var wideFieldAzimuthStep = (int) args[2];
+            if ((SourceCommandType) args[1] == SourceCommandType.Auto)
+                AutoSetUp(in args);
+            else
+                ManualSetUp((Vector2Int) args[2]);
+        }
+
+        private void AutoSetUp(in object[] args)
+        {
+            var objectImagePosition = (Vector2Int) args[2];
+            var wideFieldAzimuthStep = (int) args[3];
             
             var tightAzimuthStep = wideFieldAzimuthStep.AzimuthTightFieldCameraStep();
             var elevationStep = objectImagePosition.ElevationTightFieldCameraStep();
 
             var newPosition = new Vector2Int(tightAzimuthStep, elevationStep);
+            SetUpPosition(newPosition);
+        }
+
+        private void ManualSetUp(Vector2Int deltaPosition)
+        {
+            var newPosition = CurrentPosition + deltaPosition;
+            SetUpPosition(newPosition);
+        }
+
+        private void SetUpPosition(Vector2Int newPosition)
+        {
             newPosition.Clamp(MinStepValue, MaxStepValue);
             PositionController.SetUp(newPosition);
         }

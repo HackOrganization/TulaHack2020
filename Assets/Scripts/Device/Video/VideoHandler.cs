@@ -4,10 +4,14 @@ using Core.GameEvents;
 using Device.Data;
 using Device.Utils;
 using Device.Video.Utils;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils.Extensions;
+
 using EventType = Core.GameEvents.EventType;
+using VideoTightFieldParams = Device.Video.Utils.TightFieldParams;
+using VideoWideFieldParams = Device.Video.Utils.WideFieldParams;
 
 namespace Device.Video
 {
@@ -26,7 +30,7 @@ namespace Device.Video
         private CameraIdentificationSettings cameraIdentificationSettings;
 
         [Header("Object handler")] 
-        [SerializeField] protected ObjectHandler objectHandler;
+        [SerializeField, CanBeNull] protected ObjectHandler objectHandler;
         
         /// <summary>
         /// Текущий статус контроллера 
@@ -73,7 +77,8 @@ namespace Device.Video
             
             SetUpSendFrame();
             SetUpDestination();
-            objectHandler.Initialize(_cameraType, destination.rectTransform, _webCamResolution);
+            if(objectHandler != null)
+                objectHandler.Initialize(_cameraType, destination.rectTransform, _webCamResolution);
             _initialized = true;
         }
         
@@ -186,8 +191,8 @@ namespace Device.Video
             var idName = cameraIdentificationSettings.GetName(_cameraType);
             _webCamDevice = WebCamTexture.devices.GetByIdentificationName(idName);
             _webCamTexture = _cameraType == CameraTypes.WideField
-                ? new WebCamTexture(_webCamDevice.name, WideFieldParams.WIDTH, WideFieldParams.HEIGHT)
-                : new WebCamTexture(_webCamDevice.name, TightFiledParams.WIDTH, TightFiledParams.HEIGHT);
+                ? new WebCamTexture(_webCamDevice.name, VideoWideFieldParams.WIDTH, VideoWideFieldParams.HEIGHT)
+                : new WebCamTexture(_webCamDevice.name, VideoTightFieldParams.WIDTH, VideoTightFieldParams.HEIGHT);
                 
             Status = VideoStatuses.Authorized;
             Play();

@@ -1,10 +1,12 @@
 ﻿using Core.GameEvents;
 using Device.Hardware.LowLevel;
 using Device.Utils;
-using Device.Video.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+
 using EventType = Core.GameEvents.EventType;
+using VideoTightFieldParams = Device.Video.Utils.TightFieldParams;
+using VideoWideFieldParams = Device.Video.Utils.WideFieldParams;
 
 namespace Device.Hardware.Test.UI.Write
 {
@@ -27,13 +29,13 @@ namespace Device.Hardware.Test.UI.Write
         
         protected override void Execute()
         {
-            ClampValues(tightFieldInputX, 0, WideFieldParams.WIDTH);
-            ClampValues(tightFieldInputY, 0, WideFieldParams.HEIGHT);
+            ClampValues(tightFieldInputX, 0, VideoWideFieldParams.WIDTH);
+            ClampValues(tightFieldInputY, 0, VideoWideFieldParams.HEIGHT);
             
             Buffer.x = tightFieldInputX.GetValue();
             Buffer.y = tightFieldInputY.GetValue();
             
-            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, Buffer);
+            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, SourceCommandType.Auto, Buffer);
         }
     }
 }

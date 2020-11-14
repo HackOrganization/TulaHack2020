@@ -16,8 +16,10 @@ namespace Core.GameEvents
         ReceivedMessage, //MessageType, IMessage, AsynchronousClient
         
         DeviceHandlePosition, //CameraTypes
-        DeviceGoPosition, //CameraTypes(WideField), Position[Vector2Int], Size[Vector2Int], Probability[byte]
-                          //CameraTypes(TightField), Position[Vector2Int], StepPosition[Vector2Int]
+        DeviceGoPosition, //CameraTypes(WideField), SourceCommandType[Auto], Position[Vector2Int], Size[Vector2Int], Probability[byte]
+                          //CameraTypes(WideField), SourceCommandType[Manual], DeltaPosition/Position[Vector2Int]
+                          //CameraTypes(TightField), SourceCommandType[Auto], Position[Vector2Int], StepPosition[Vector2Int]
+                          //CameraTypes(TightField), SourceCommandType[Manual], DeltaPosition/Position[Vector2Int]
         
         CameraDrawObject,//CameraTypes, Success[bool], Position[Vector2Int], Size[Vector2Int]
         CaptureNewImage, //CameraTypes

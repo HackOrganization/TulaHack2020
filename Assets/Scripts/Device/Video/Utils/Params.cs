@@ -21,7 +21,7 @@ namespace Device.Video.Utils
             => new Vector2Int(input.x - (WIDTH / 2), input.y - (HEIGHT / 2));
     }
 
-    public class TightFiledParams
+    public class TightFieldParams
     {
         /// <summary>
         /// Запрашиваемая ширина изображения

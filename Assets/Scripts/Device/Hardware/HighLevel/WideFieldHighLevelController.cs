@@ -5,6 +5,8 @@ using Device.Utils;
 using UnityEngine;
 using Utils.Extensions;
 using EventType = Core.GameEvents.EventType;
+
+using GlobalWideFieldParams = Device.Utils.WideFieldParams;
 using VideoWideFieldParams = Device.Video.Utils.WideFieldParams;
 using LowLevelWideFieldParams = Device.Hardware.LowLevel.Utils.WideFieldParams;
 
@@ -51,8 +53,16 @@ namespace Device.Hardware.HighLevel
             if(CameraType != cameraType)
                 return;
 
-            var objectImagePosition = (Vector2Int) args[1];
-            if (objectImagePosition.IsNullPosition() || (byte) args[3] < Params.WIDEFIELD_DETECTION_PROBABILITY)
+            if ((SourceCommandType) args[1] == SourceCommandType.Auto)
+                AutoSetUp(in args);
+            else
+                ManualSetUp((Vector2Int) args[2]);
+        }
+
+        private void AutoSetUp(in object[] args)
+        {
+            var objectImagePosition = (Vector2Int) args[2];
+            if (objectImagePosition.IsNullPosition() || (byte) args[4] < Params.WIDEFIELD_DETECTION_PROBABILITY)
             {
                 EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, false);
             }
@@ -60,16 +70,32 @@ namespace Device.Hardware.HighLevel
             {
                 var newObjectImagePosition = objectImagePosition.DelayedWideImageObjectPosition(CurrentPosition, CashedDevicePosition);
                 newObjectImagePosition.Clamp(MinImagePosition, MaxImagePosition);
-                EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, true, newObjectImagePosition, args[2]);
+                EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, true, newObjectImagePosition, args[3]);
                 
-                var stepPosition = objectImagePosition.AzimuthWideFieldCameraStep(CashedDevicePosition);
-                stepPosition = Mathf.Clamp(stepPosition, LowLevelWideFieldParams.WIDEFIELD_MIN_STEPS,
-                    LowLevelWideFieldParams.WIDEFIELD_MAX_STEPS);
+                var azimuthStep = objectImagePosition.AzimuthWideFieldCameraStep(CashedDevicePosition);
+                SetUpAzimuth(ref azimuthStep, SourceCommandType.Auto);
                 
-                PositionController.SetUp(new Vector2Int(stepPosition, 0));
-                
-                EventManager.RaiseEvent(EventType.DeviceGoPosition,CameraTypes.TightField, objectImagePosition, stepPosition);
+                EventManager.RaiseEvent(EventType.DeviceGoPosition,CameraTypes.TightField, SourceCommandType.Auto, objectImagePosition, azimuthStep);
             }
+        }
+
+        private void ManualSetUp(Vector2Int deltaPosition)
+        {
+            var azimuthStep = CurrentPosition.x + deltaPosition.x;
+            SetUpAzimuth(ref azimuthStep, SourceCommandType.Manual);
+        }
+
+        private void SetUpAzimuth(ref int azimuthStep, in SourceCommandType commandSource)
+        {
+            azimuthStep = Mathf.Clamp(
+                azimuthStep, 
+                LowLevelWideFieldParams.WIDEFIELD_MIN_STEPS,
+                LowLevelWideFieldParams.WIDEFIELD_MAX_STEPS);
+            
+            if(GlobalWideFieldParams.SourceCommandType != commandSource)
+                return;
+                
+            PositionController.SetUp(new Vector2Int(azimuthStep, 0));
         }
     }
 }

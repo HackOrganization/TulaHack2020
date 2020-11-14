@@ -1,9 +1,7 @@
-﻿using Core.GameEvents;
-using Core.OrderStart;
+﻿using Core.OrderStart;
 using Device.UI;
 using Device.Utils;
 using UnityEngine;
-using EventType = Core.GameEvents.EventType;
 
 namespace Device.Video.Test
 {

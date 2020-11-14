@@ -14,8 +14,8 @@ namespace Device.Hardware.Test.UI.Write
             ClampValues(tightFieldInputY, LowLevelTightFieldParams.TIGHTFIELD_MIN_STEPS_Y, LowLevelTightFieldParams.TIGHTFIELD_MAX_STEPS_Y);
             
             base.Execute();
-            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, WideFieldBuffer);
-            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.TightField, TightFieldBuffer);
+            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, SourceCommandType.Manual, WideFieldBuffer);
+            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.TightField, SourceCommandType.Manual, TightFieldBuffer);
         }
     }
 }
