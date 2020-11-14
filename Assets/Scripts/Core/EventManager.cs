@@ -14,6 +14,9 @@ namespace Core
         ClientConnected, //IsClientSide, LocalEndPoint, RemoteEndPoint
         ReceivedMessage, //MessageType, IMessage, AsynchronousClient
         
+        HardwareSerialPortDetected,//Result, PortName
+        HardwareSerialPortDetectionCanceled,
+        
         DeviceSendImage, //CameraTypes
         DeviceGoPosition, //Vector2
     }

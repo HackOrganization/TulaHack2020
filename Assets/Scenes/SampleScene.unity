@@ -359,7 +359,7 @@ MonoBehaviour:
   execute: 1
   cameraType: 0
   videoHandler: {fileID: 858799764}
-  hardwareController: {fileID: 858799763}
+  hardwareController: {fileID: 0}
 --- !u!1 &937409897
 GameObject:
   m_ObjectHideFlags: 0
@@ -435,7 +435,7 @@ MonoBehaviour:
   execute: 0
   cameraType: 1
   videoHandler: {fileID: 937409900}
-  hardwareController: {fileID: 937409899}
+  hardwareController: {fileID: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

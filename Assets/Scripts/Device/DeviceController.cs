@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using Core;
 using Device.Hardware;
+using Device.Hardware.HighLevel;
+using Device.Hardware.LowLevel;
 using Device.Networking;
 using Device.Utils;
 using Device.Video;
@@ -35,7 +37,7 @@ namespace Device
         /// Фиксирует, что устройство готово к работе.
         /// Для этого необходиом, чтобы было создано соединение с сервером и камера подключилась
         /// </summary>
-        public bool IsReady => _client.Connected && videoHandler.IsAuthorized;
+        public bool IsReady => _client.Connected && videoHandler.IsAuthorized && hardwareController.IsInitialized;
         
         private NeuralNetworkBaseClient _client;
         private readonly Dictionary<ushort, Vector2> _framePositionMap = new Dictionary<ushort, Vector2>(); 
@@ -64,7 +66,7 @@ namespace Device
             
             yield return videoHandler.Capture();
             var newIndex = _framePositionMap.Keys.GetNextFree();
-            _framePositionMap.Add(newIndex, hardwareController.CurrentPosition);
+            _framePositionMap.Add(newIndex, hardwareController.WideFieldCameraController.CurrentPosition);
 
             var newMessage = new ImageMessage(
                 cameraType == CameraTypes.WideField
