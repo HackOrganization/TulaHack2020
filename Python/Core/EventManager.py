@@ -12,17 +12,14 @@ class EventManagerEntity:
 
     def __init__(self):
         EventManager.Instance = self
-        print(f"{self}: {len(self.HandlerMap)}")
 
     def AddHandler(self, eventType: EventType, action):
-        print(self)
         if eventType in self.HandlerMap:
             self.HandlerMap.get(eventType).append(action)
         else:
             self.HandlerMap[eventType] = [action]
 
     def RemoveHandler(self, eventType: EventType, action):
-        print(self)
         if eventType not in self.HandlerMap:
             return
 
@@ -30,13 +27,9 @@ class EventManagerEntity:
         if action not in actionList:
             return
 
-        print(f"Actions before remove: {len(actionList)}")
         actionList.remove(action)
-        print(f"Actions after remove: {len(self.HandlerMap.get(eventType))}")
         if len(actionList) == 0:
             self.HandlerMap.pop(eventType)
-        # else:
-        #     self.__handlerMap.update({eventType: actionList})
 
     def RaiseEvent(self, eventType: EventType, kwargs):
         print(self)
@@ -45,11 +38,6 @@ class EventManagerEntity:
 
         for action in self.HandlerMap.get(eventType):
             action(kwargs=kwargs)
-
-    def TestFunction(self, kwargs):
-        print("With context:")
-        for key in kwargs:
-            print(f"{key} : {kwargs[key]}")
 
 
 class EventManager:

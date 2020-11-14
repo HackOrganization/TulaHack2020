@@ -15,10 +15,14 @@ def Execute():
         inputCommand = input()
         if inputCommand == "exit_quit":
             motionDetectionListener.Dispose()
+            motionDetectionWorker.Dispose()
             break
 
-    motionDetectionListener.AcceptThread.join()
-    motionDetectionWorker.join()
+    if motionDetectionListener.AcceptThread.is_alive():
+        motionDetectionListener.AcceptThread.join()
+    if motionDetectionWorker.is_alive():
+        motionDetectionWorker.join()
+
 
 if __name__ == '__main__':
     Execute()

@@ -10,10 +10,8 @@ from keras.preprocessing.image import img_to_array
 from Socket.Messages.WideFieldPositionMessage import WideFieldPositionMessage
 
 
-# ToDo: write dispose and call
-# EventManager.RemoveHandler(eventType=EventType.WideFieldImageGotten, action=self.OnMessageReceive)
 class MotionDetection(Thread):
-    IsDisposed: bool = False
+    __isDisposed: bool = False
     BufferDictionary: dict = {}
     WorkDictionary: dict = {}
     Locker: RLock = RLock()
@@ -26,7 +24,7 @@ class MotionDetection(Thread):
         self.start()
 
     def run(self):
-        while not self.IsDisposed:
+        while not self.__isDisposed:
             if len(self.BufferDictionary) == 0:
                 time.sleep(Params.FPS)
                 continue
@@ -42,11 +40,19 @@ class MotionDetection(Thread):
             for key in keys:
                 item = self.WorkDictionary.pop(key)
                 # ToDo: detect
+                if self.__isDisposed:
+                    break
                 responseObject = WideFieldPositionMessage(key, random.randint(0, 640), random.randint(0, 480))
 
                 print(f"[WideField] Bytes sent: {item['client'].send(responseObject.Serialize())}")
                 print(f"[WideField] Sent coordinates {responseObject.PositionX}:{responseObject.PositionY}")
 
+        self.Locker.acquire()
+        try:
+            self.BufferDictionary.clear()
+            self.WorkDictionary.clear()
+        finally:
+            self.Locker.release()
         print("Motion detection closed!")
 
     def OnMessageReceive(self, kwargs):
@@ -58,3 +64,7 @@ class MotionDetection(Thread):
             self.BufferDictionary.update({packetId: {'client': kwargs['client'], 'data': byteArray}})
         finally:
             self.Locker.release()
+
+    def Dispose(self):
+        EventManager.RemoveHandler(eventType=EventType.WideFieldImageGotten, action=self.OnMessageReceive)
+        self.__isDisposed = True
