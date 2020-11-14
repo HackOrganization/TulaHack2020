@@ -16,9 +16,9 @@ namespace Core.GameEvents
         ReceivedMessage, //MessageType, IMessage, AsynchronousClient
         
         DeviceHandlePosition, //CameraTypes
-        DeviceGoPosition, //CameraTypes, Position[Vector2Int]
+        DeviceGoPosition, //CameraTypes, Position[Vector2Int], Size[Vector2Int]
         
-        CameraDrawObject,//CameraTypes, Position[Vector2Int], Size[Vector2Int], 
+        CameraDrawObject,//CameraTypes, Position[Vector2Int], Size[Vector2Int]
         CaptureNewImage, //CameraTypes
         
         EndWork

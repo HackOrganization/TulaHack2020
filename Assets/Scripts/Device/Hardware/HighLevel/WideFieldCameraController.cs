@@ -1,7 +1,11 @@
-﻿using Device.Hardware.HighLevel.Utils;
+﻿using Core.GameEvents;
+using Core.MathConversion;
+using Device.Hardware.HighLevel.Utils;
 using Device.Hardware.LowLevel;
 using Device.Utils;
 using UnityEngine;
+using Utils.Extensions;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.Hardware.HighLevel
 {
@@ -38,13 +42,16 @@ namespace Device.Hardware.HighLevel
                 return;
 
             var position = (Vector2Int) args[1];
-            //ToDo: use CashedDevicePosition to get new Device Step
-            if(position == PassiveHuntingFlag)
-                return;
+            if (!((Vector2) position).IsNullPosition())
+            {
+                var positionOnImage = position.DelayedImageHorizontalPosition(CurrentPosition, CashedDevicePosition);
+                position = position.HorizontalPosition(CashedDevicePosition);
                 
-            //ToDo: transform lastStep + position to new orientation (in steps)
+                EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, positionOnImage, args[2]);
+            }
             
-            LastHandledPosition.SetUp(position);
+            //ToDo: uncomment to navigate
+            //LastHandledPosition.SetUp(position);
         }
     }
 }
