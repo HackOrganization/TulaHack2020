@@ -34,7 +34,7 @@ model = Model(inputs, head_model(base_model(inputs)))
 print("Loading models completed!")
 
 
-def make_gradcam_heatmap(img_array, base_model, head_model):
+def make_gradcam_heatmap(img_array):
     last_conv_layer = base_model.layers[-1]
 
     # Then, we compute the gradient of the top predicted class for our input image
@@ -84,7 +84,7 @@ def detect_tank(frame):
     img = frame / 255
     img = np.expand_dims(img, axis=0)
     # img = preprocess_input(img)
-    tank_probability, heatmap = make_gradcam_heatmap(img, base_model, head_model)
+    tank_probability, heatmap = make_gradcam_heatmap(img)
 
     return tank_probability, heatmap  # !!!!!
 
@@ -99,12 +99,13 @@ def Execute(frame, packetId):
     centerIndex = FindCenter(probability, heatMap)
 
     print(F"Packet: {packetId}. Probability: {probability}. Center: {centerIndex}")
+    # cv2.imshow("Heatmap", np.kron(heatMap, np.ones((30, 30))))
 
     return probability, centerIndex
 
 
 def FindCenter(probability, heatMap):
-    if probability < 15:
+    if probability < 16:
         return -1, -1
 
     centerIndex = np.unravel_index(np.argmax(heatMap), heatMap.shape) # x, y

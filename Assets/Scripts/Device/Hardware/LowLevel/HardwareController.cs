@@ -59,8 +59,8 @@ namespace Device.Hardware.LowLevel
             _loopWait = new WaitForSeconds(1f / SerialPortParams.TIMEOUT);
 
             //ToDo: Comment TEST_LockSearchingDevice, uncomment StartSearchingDevice
-            TEST_LockSearchingDevice();
-            //StartSearchingDevice();
+            //TEST_LockSearchingDevice();
+            StartSearchingDevice();
 
             StartCoroutine(CorSendPosition());
         }
@@ -98,11 +98,11 @@ namespace Device.Hardware.LowLevel
         {
             if (args.Result)
             {
-                Debug.Log($"Found! {args.PortName}");
-                
-                _serialPortController = SerialPortParams.NewSerialPort(args.PortName);
+                Debug.Log($"Found! {args.Controller}");
+
+                _serialPortController = args.Controller;
                 _serialPortController.onMessageReceived += OnMessageReceived;
-                foreach (var wrapper in _threadWrappers.Where(wr => wr.PortName != args.PortName))
+                foreach (var wrapper in _threadWrappers.Where(wr => !wr.RequestCanceled))
                     wrapper.CancelRequest();
 
                 foreach (var cameraBaseController in CameraBaseControllers)
@@ -117,8 +117,6 @@ namespace Device.Hardware.LowLevel
                     wrapper.Dispose();
                 
                 _threadWrappers.Clear();
-
-                _serialPortController?.Start();
             }
         }
         #endregion

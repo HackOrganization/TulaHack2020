@@ -27,6 +27,7 @@ class MotionDetection(Thread):
         self.start()
 
     def run(self):
+        # anyDrawn = False
         while not self.__isDisposed:
             if len(self.BufferDictionary) == 0:
                 time.sleep(Params.FPS)
@@ -45,6 +46,7 @@ class MotionDetection(Thread):
                 # Detect
                 prob, center = TankCapture.Execute(item['image'], packetId)
 
+                # anyDrawn = True
                 if self.__isDisposed:
                     break
                 responseObject = WideFieldPositionMessage(
@@ -63,6 +65,9 @@ class MotionDetection(Thread):
             self.WorkDictionary.clear()
         finally:
             self.Locker.release()
+
+        # if anyDrawn:
+        #     cv2.destroyAllWindows()
 
         print("Motion detection closed!")
 

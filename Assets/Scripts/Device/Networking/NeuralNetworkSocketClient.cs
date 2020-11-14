@@ -80,7 +80,7 @@ namespace Device.Networking
 
         private void OnWideFieldPositionCaught(WideFieldPositionMessage message)
         {
-            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, message.PacketId, message.Position);
+            //EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, message.PacketId, message.Position);
             EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, message.Position, message.Size);
         }
         

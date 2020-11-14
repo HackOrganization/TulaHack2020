@@ -3,12 +3,13 @@
     public class SerialPortDetectorEventArgs
     {
         public readonly bool Result;
-        public readonly string PortName;
+        
+        public readonly SerialPortController Controller;
 
-        public SerialPortDetectorEventArgs(bool result, string portName)
+        public SerialPortDetectorEventArgs(bool result, SerialPortController controller)
         {
             Result = result;
-            PortName = portName;
+            Controller = controller;
         }
     }
 }

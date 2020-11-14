@@ -48,6 +48,7 @@ namespace Device.Hardware.HighLevel
                 return;
                 
             //ToDo: transform lastStep + position to new orientation (in steps)
+            
             LastHandledPosition.SetUp(position);
         }
     }
