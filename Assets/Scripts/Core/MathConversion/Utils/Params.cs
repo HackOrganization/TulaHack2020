@@ -12,6 +12,7 @@
         public const int WIDTH = 640;
         public const int HEIGHT = 480;
 
+        //ToDo: BEFORE TEST SetUp correct
         public const int HORISONTAL_ANGLES = 40 / 2;
         public const int VERTICAL_ANGLES = 30 / 2;
 

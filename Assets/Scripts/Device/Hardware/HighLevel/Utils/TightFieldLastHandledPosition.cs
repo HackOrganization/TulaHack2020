@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Device.Hardware.LowLevel.Utils.Communication.Infos;
 using UnityEngine;
+using Utils.Extensions;
 
 namespace Device.Hardware.HighLevel.Utils
 {
@@ -21,6 +22,9 @@ namespace Device.Hardware.HighLevel.Utils
         /// </summary>
         public void SetUp(Vector2Int newValue)
         {
+            if(!Position.IsTightFieldUpdatable(in newValue))
+                return;
+            
             Position = new Vector2Int(
                 newValue.x == 0 ? Position.x : newValue.x,
                 newValue.y == 0 ? Position.y : newValue.y);

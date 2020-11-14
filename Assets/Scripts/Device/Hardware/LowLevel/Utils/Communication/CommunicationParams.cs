@@ -21,9 +21,11 @@ namespace Device.Hardware.LowLevel.Utils.Communication
         public const int FULL_LOOP_TIME = 4;
 
         /// <summary>
-        /// Количество шагов за полный круг
+        /// Количество шагов за полный круг (для широкопольной камеры) 
         /// </summary>
-        public const int FULL_LOOP_STEPS = 5730;
+        public const int WIDEFIELD_FULL_LOOP_STEPS = 5730;
+        public const int TIGHTFIELD_FULL_LOOP_STEPS_X = 5730;
+        public const int TIGHTFIELD_FULL_LOOP_STEPS_Y = 5730;
         
         public const string HELLO_REQUEST = "T;";
         public const string HELLO_RESPONSE = "PSINA";

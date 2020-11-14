@@ -14,14 +14,12 @@ namespace Device.Hardware.HighLevel
         /// Тип камеры
         /// </summary>
         public override CameraTypes CameraType => CameraTypes.TightField;
-        
+
         /// <summary>
         /// Текущая позиция устройства (в шагах)
         /// </summary>
-        public override Vector2Int CurrentPosition => _currentPosition;
-        
-        private Vector2Int _currentPosition;
-        
+        public override Vector2Int CurrentPosition { get; set; }
+
         public override void Initialize(SerialPortController serialPortController)
         {
             LastHandledPosition = new TightFieldLastHandledPosition();

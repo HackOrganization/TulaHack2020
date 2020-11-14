@@ -49,7 +49,7 @@ namespace Device.Hardware.Test
             foreach (var slider in Sliders)
             {
                 slider.minValue = 0;
-                slider.maxValue = CommunicationParams.FULL_LOOP_STEPS;
+                slider.maxValue = CommunicationParams.WIDEFIELD_FULL_LOOP_STEPS;
                 slider.wholeNumbers = true;
             }
             

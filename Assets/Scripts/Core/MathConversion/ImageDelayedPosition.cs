@@ -6,7 +6,7 @@ namespace Core.MathConversion
     public static class MathConversions
     {
         /// <summary>
-        /// Получает позицию объекта на новом изображении по координатам объекта на старом изображении 
+        /// Получает позицию объекта на новом изображении по координатам объекта на старом изображении (в пикселях) 
         /// </summary>
         public static Vector2Int DelayedImageHorizontalPosition(this Vector2Int objectPosition,
             in Vector2Int currentPosition, in Vector2Int cashedPosition)

@@ -1,7 +1,9 @@
 ﻿using Core.GameEvents;
 using Core.MathConversion;
+using Core.MathConversion.Utils;
 using Device.Hardware.HighLevel.Utils;
 using Device.Hardware.LowLevel;
+using Device.Hardware.LowLevel.Utils.Communication;
 using Device.Utils;
 using UnityEngine;
 using Utils.Extensions;
@@ -15,6 +17,13 @@ namespace Device.Hardware.HighLevel
     public class WideFieldCameraController: CameraBaseController
     {
         /// <summary>
+        /// Максимально допустимый размер изображения
+        /// </summary>
+        private static readonly Vector2Int MaxImagePosition = new Vector2Int(WideFieldParams.WIDTH, WideFieldParams.HEIGHT);
+        
+        private static readonly Vector2Int MaxStepValue = new Vector2Int(CommunicationParams.WIDEFIELD_FULL_LOOP_STEPS, 0);
+        
+        /// <summary>
         /// Тип камеры
         /// </summary>
         public override CameraTypes CameraType => CameraTypes.WideField;
@@ -22,7 +31,11 @@ namespace Device.Hardware.HighLevel
         /// <summary>
         /// Текущая позиция устройства (в шагах)
         /// </summary>
-        public override Vector2Int CurrentPosition => new Vector2Int(_currentPosition, 0);
+        public override Vector2Int CurrentPosition
+        {
+            get => new Vector2Int(_currentPosition, 0);
+            set => _currentPosition = value.x;
+        } 
 
         private int _currentPosition;
 
@@ -42,16 +55,17 @@ namespace Device.Hardware.HighLevel
                 return;
 
             var position = (Vector2Int) args[1];
-            if (!((Vector2) position).IsNullPosition())
+            if (!position.IsNullPosition())
             {
                 var positionOnImage = position.DelayedImageHorizontalPosition(CurrentPosition, CashedDevicePosition);
-                position = position.HorizontalPosition(CashedDevicePosition);
-                
+                positionOnImage.Clamp(MinImagePosition, MaxImagePosition);
                 EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, positionOnImage, args[2]);
+                
+                position = position.HorizontalPosition(CashedDevicePosition);
+                position.Clamp(MinStepValue, MaxStepValue);
             }
             
-            //ToDo: uncomment to navigate
-            //LastHandledPosition.SetUp(position);
+            LastHandledPosition.SetUp(position);
         }
     }
 }

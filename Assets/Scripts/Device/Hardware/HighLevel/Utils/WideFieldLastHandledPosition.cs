@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Device.Hardware.LowLevel.Utils.Communication.Infos;
 using UnityEngine;
+using Utils.Extensions;
 
 namespace Device.Hardware.HighLevel.Utils
 {
@@ -21,6 +22,9 @@ namespace Device.Hardware.HighLevel.Utils
         /// </summary>
         public void SetUp(Vector2Int newValue)
         {
+            if(!Position.IsWideFieldUpdatable(in newValue))
+                return;
+            
             Position = newValue.x;
             _updated = true;
         }
@@ -32,11 +36,6 @@ namespace Device.Hardware.HighLevel.Utils
         {
             success |= _updated;
             _updated = false;
-
-            if (success)
-            {
-                Debug.Log("Should Send!");
-            }
             
             return new[] { new MoveInfo(Position) };
         }

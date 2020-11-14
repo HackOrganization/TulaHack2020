@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using Core;
 using Core.GameEvents;
 using Device.Hardware.HighLevel.Utils;
 using Device.Hardware.LowLevel;
 using Device.Utils;
 using UnityEngine;
-using Utils.Extensions;
 using EventType = Core.GameEvents.EventType;
 
 namespace Device.Hardware.HighLevel
@@ -17,10 +14,15 @@ namespace Device.Hardware.HighLevel
     public abstract class CameraBaseController: MonoBehaviour
     {
         /// <summary>
-        /// Неопределенные координты (передаются в том случае, если нужно находиться либо в пассивном режиме, либо никуда не нужно двигаться)
+        /// Минимально допустимая координата изображения
         /// </summary>
-        protected static readonly Vector2Int PassiveHuntingFlag = new Vector2Int(-1, -1);
-
+        protected static readonly Vector2Int MinImagePosition = Vector2Int.zero;
+        
+        /// <summary>
+        /// Минимально допустимое значение позиции шаговика (в шагах)
+        /// </summary>
+        protected static readonly Vector2Int MinStepValue = Vector2Int.zero;
+        
         /// <summary>
         /// Тип камеры
         /// </summary>
@@ -34,7 +36,7 @@ namespace Device.Hardware.HighLevel
         /// <summary>
         /// Текущая позиция устройства (в шагах)
         /// </summary>
-        public abstract Vector2Int CurrentPosition { get; }
+        public abstract Vector2Int CurrentPosition { get; set; }
         
         /// <summary>
         /// Последняя переданная позиция наведения (в пикселях)

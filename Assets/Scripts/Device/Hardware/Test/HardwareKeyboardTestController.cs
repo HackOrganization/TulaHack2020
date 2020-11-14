@@ -26,7 +26,8 @@ namespace Device.Hardware.Test
         private static readonly Vector2Int NUllDeltaValue = Vector2Int.zero;
         
         private static readonly Vector2Int MinValue = Vector2Int.zero;
-        private static readonly Vector2Int MaxValue = new Vector2Int(CommunicationParams.FULL_LOOP_STEPS, CommunicationParams.FULL_LOOP_STEPS);
+        private static readonly Vector2Int MaxWideFieldValue = new Vector2Int(CommunicationParams.WIDEFIELD_FULL_LOOP_STEPS, CommunicationParams.WIDEFIELD_FULL_LOOP_STEPS);
+        private static readonly Vector2Int MaxTightFieldValue = new Vector2Int(CommunicationParams.TIGHTFIELD_FULL_LOOP_STEPS_X, CommunicationParams.TIGHTFIELD_FULL_LOOP_STEPS_Y);
 
         [Header("Settings")] 
         [SerializeField] private bool autoExecute;
@@ -64,8 +65,8 @@ namespace Device.Hardware.Test
             if (Input.GetKey(KeyCode.E))
                 _wideFiledValues[0] += KeyMap[1] * speed;
 
-            _wideFiledValues[0].Clamp(MinValue, MaxValue);
-            _tightFiledValues[0].Clamp(MinValue, MaxValue);
+            _wideFiledValues[0].Clamp(MinValue, MaxWideFieldValue);
+            _tightFiledValues[0].Clamp(MinValue, MaxTightFieldValue);
 
 
             SendPosition(CameraTypes.WideField, ref _wideFiledValues);
