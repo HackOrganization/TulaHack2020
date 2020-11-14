@@ -1,6 +1,6 @@
 import Socket.Messages.Utils.Params as Params
 import Socket.Utils.ByteConverter as ByteConverter
-import random as random
+import random
 
 from Socket.Messages.Utils.MessageTypes import MessageTypes
 from Socket.Messages.ImageMessage import ImageMessage
@@ -15,9 +15,6 @@ class WideFieldPositionMessage(Message):
 
     def __init__(self, packetId: int, positionX: int, positionY: int):
         self.Initialize(packetId, positionX, positionY)
-
-    def __init__(self, packetId: int, message: ImageMessage):
-        self.Initialize(packetId, random.randint(0, message.Width), random.randint(0, message.Height))
 
     def Initialize(self, packetId: int, positionX: int, positionY: int):
         length = Params.MESSAGE_HEADER_LENGTH + 1 + 2 + (2 + 2)

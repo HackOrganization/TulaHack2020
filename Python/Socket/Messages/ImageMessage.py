@@ -10,7 +10,7 @@ class ImageMessage(Message):
     PacketId: int  # ushort : 2
     Width: int  # ushort : 2
     Height: int  # ushort : 2
-    JpgImageData: bytearray  # : len()
+    JpgImageData: bytes  # : len()
 
     def __init__(self, data: bytearray):
         self.MessageLength = len(data)
@@ -19,7 +19,7 @@ class ImageMessage(Message):
         self.Width = ByteConverter.GetInteger(data, 7, 2, False)
         self.Height = ByteConverter.GetInteger(data, 9, 2, False)
         # ToDo: Get image and convert it
-        self.JpgImageData = ByteConverter.GetBytes(data, 11)
+        self.JpgImageData = bytes(data[11:])#ByteConverter.GetBytes(data, 11)
 
     def Serialize(self):
         returnArray = bytearray()

@@ -13,11 +13,9 @@ def SendResponse(client: SocketLib.socket, messageType: MessageTypes, message):
         return False
     elif messageType == MessageTypes.WideFieldImage:
         # Send message to MotionDetection controller
-        EventManager.RaiseEvent(EventType.WideFieldImageGotten, message)
+        EventManager.RaiseEvent(EventType.WideFieldImageGotten, kwargs={'client': client, 'message': message})
 
-        responseObject = WideFieldPositionMessage(message.PacketId, message)
-        print(f"[WideField] Bytes sent: {client.send(responseObject.Serialize())}")
-        print(f"[WideField] Sent coordinates {responseObject.PositionX}:{responseObject.PositionY}")
+
     elif messageType == MessageTypes.TightFieldImage:
         # ToDo: Save Id
         # ToDo: Send to neural

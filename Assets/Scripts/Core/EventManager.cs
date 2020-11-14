@@ -45,23 +45,23 @@ namespace Core
         /// </summary>
         public static void RemoveHandler(EventType type, Action<object[]> handler) 
         {
-            if (_handlers.ContainsKey(type)) 
-            {
-                _handlers[type].Remove(handler);
-            }
+            if (!_handlers.ContainsKey(type)) 
+                return;
+            
+            _handlers[type].Remove(handler);
         }
 
         /// <summary>
         /// Отправляет эвент всем слушателям
         /// </summary>
-        public static void RaiseEvent(EventType type, params object[] args) 
+        public static void RaiseEvent(EventType type, params object[] args)
         {
-            if (_handlers.ContainsKey(type)) 
+            if (!_handlers.ContainsKey(type))
+                return;
+            
+            foreach (var handler in _handlers[type]) 
             {
-                foreach (var handler in _handlers[type]) 
-                {
-                    handler(args);
-                }
+                handler(args);
             }
         }
     }
