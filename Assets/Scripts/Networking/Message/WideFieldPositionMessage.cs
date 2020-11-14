@@ -16,6 +16,11 @@ namespace Networking.Message
         public MessageType MessageType => MessageType.WideFieldPosition;
 
         /// <summary>
+        /// Вероятность распознавания
+        /// </summary>
+        public byte Probability;
+        
+        /// <summary>
         /// Пиксельные координаты изображения. Требует на каждую координату по 2 байта
         /// </summary>
         public Vector2Int Position;
@@ -30,12 +35,13 @@ namespace Networking.Message
         /// </summary>
         public byte[] Serialize()
         {
-            //MessageType + (Position.x + Position.y) + (Size.x + Size.y)
+            //MessageType + Probability + (Position.x + Position.y) + (Size.x + Size.y)
             const ushort length = (ushort) (1 + (2 + 2) + (2 + 2));
             this.CreateMessage(length, out var data);
 
             var offset = MessageExtensions.HEADER_LENGTH;
             offset = MessageExtensions.SetByte(in data, (byte) MessageType, offset);
+            offset = MessageExtensions.SetByte(in data, Probability, offset);
             offset = MessageExtensions.SetBytes(in data, (ushort)Position.x, offset);
             offset = MessageExtensions.SetBytes(in data, (ushort)Size.x, offset);
             offset = MessageExtensions.SetBytes(in data, (ushort)Size.y, offset);
@@ -49,9 +55,10 @@ namespace Networking.Message
         /// </summary>
         public static IMessage Deserialize(in byte[] data)
         {
-            var offset = MessageExtensions.HEADER_LENGTH + 1;
             var message = new WideFieldPositionMessage();
+            var offset = MessageExtensions.HEADER_LENGTH + 1;
 
+            message.Probability = data[offset++];
             var positionX = MessageExtensions.GetInt16(data, ref offset);
             var positionY = MessageExtensions.GetInt16(data, ref offset);
             message.Position = new Vector2Int(positionX, positionY);

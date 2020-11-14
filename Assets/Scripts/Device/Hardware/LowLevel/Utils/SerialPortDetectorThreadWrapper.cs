@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading;
+using Device.Hardware.LowLevel.Controllers;
 using Device.Hardware.LowLevel.Utils.Communication;
 using UnityAsyncHelper.Wrappers;
+using UnityEngine;
 
 namespace Device.Hardware.LowLevel.Utils
 {
@@ -15,7 +17,7 @@ namespace Device.Hardware.LowLevel.Utils
         /// </summary>
         public event EventHandler<SerialPortDetectorEventArgs> onCompleted = (sender, args) => { };
         
-        private const int AwaitResponseTime = 15;
+        private const int AwaitResponseTime = 5;
 
         /// <summary>
         /// Запрос прерван
@@ -38,6 +40,7 @@ namespace Device.Hardware.LowLevel.Utils
         protected override void DoTask()
         {
             _serialPortController.Start();
+            Debug.Log($"Say Hello to {_serialPortController.PortName}: {CommunicationParams.HELLO_REQUEST}");
             _serialPortController.Send(CommunicationParams.HELLO_REQUEST);
             
             while (_currentResponseTime++ < AwaitResponseTime)

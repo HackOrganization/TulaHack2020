@@ -1,6 +1,7 @@
 ﻿using Core.GameEvents;
 using Device.Utils;
 using UnityEngine;
+using UnityEngine.UI;
 using Utils.Extensions;
 using EventType = Core.GameEvents.EventType;
 
@@ -11,11 +12,14 @@ namespace Device.Video
     /// </summary>
     public class ObjectHandler: MonoBehaviour
     {
-        /// <summary>
-        /// Recttransfrom ObjectHandler'a
-        /// </summary>
-        [SerializeField]
-        private RectTransform handlerRectTransform;
+        [Header("Square settings")]
+        [SerializeField] private RectTransform handlerRectTransform;
+
+        [Header("Status colors", order = 1)] 
+        [SerializeField] private RawImage handlerImage;
+        [SerializeField] private Color detectedColor;
+        [SerializeField] private Color lossColor;
+        
         
         /// <summary>
         /// Тип камеры
@@ -36,6 +40,11 @@ namespace Device.Video
         /// Соотношение преобразование размера объекта к размеру изображения (rectSize/imageSize)
         /// </summary>
         private Vector2 _containerResolutionRatio;
+
+        /// <summary>
+        /// Результат обнаружения в последнем кадре
+        /// </summary>
+        private bool _detectionResult;
         
         public void Initialize(CameraTypes cameraType, RectTransform container, Vector2Int resolution)
         {
@@ -51,18 +60,6 @@ namespace Device.Video
         private void OnDestroy()
         {
             ResetSubscription();
-        }
-        
-        /// <summary>
-        /// Перехват сообщения  
-        /// </summary>
-        private void OnObjectCaptured(object[] args)
-        {
-            if(_cameraType != (CameraTypes)args[0])
-                return;
-
-            handlerRectTransform.SetHandlerPosition(args[1], in _containerResolutionRatio);
-            handlerRectTransform.SetHandlerSize(args[2], in _containerResolutionRatio);
         }
         
         #region GAMEEVENTS
@@ -81,6 +78,30 @@ namespace Device.Video
         private void ResetSubscription()
         {
             EventManager.RemoveHandler(EventType.CameraDrawObject, OnObjectCaptured);
+        }
+        
+        /// <summary>
+        /// Перехват сообщения  
+        /// </summary>
+        private void OnObjectCaptured(object[] args)
+        {
+            if(_cameraType != (CameraTypes)args[0])
+                return;
+
+            var isDetected = (bool) args[1];
+            if (_detectionResult != isDetected)
+            {
+                handlerImage.color = isDetected
+                    ? detectedColor
+                    : lossColor;
+                _detectionResult = isDetected;
+            }
+            
+            if(!_detectionResult)
+                return;
+            
+            handlerRectTransform.SetHandlerPosition(args[2], in _containerResolutionRatio);
+            handlerRectTransform.SetHandlerSize(args[3], in _containerResolutionRatio);
         }
         
         #endregion

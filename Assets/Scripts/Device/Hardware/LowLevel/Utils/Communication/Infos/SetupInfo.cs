@@ -1,4 +1,6 @@
-﻿namespace Device.Hardware.LowLevel.Utils.Communication.Infos
+﻿using LowLevelParams = Device.Hardware.LowLevel.Utils.Params;
+
+namespace Device.Hardware.LowLevel.Utils.Communication.Infos
 {
     /// <summary>
     /// Класс параметров настройки
@@ -15,7 +17,7 @@
         /// </summary>
         public readonly int Acceleration;
             
-        public SetupInfo(int speed = CommunicationParams.DEFAULT_SPEED, int acceleration = CommunicationParams.DEFAULT_ACCELARATION)
+        public SetupInfo(int speed = LowLevelParams.DEFAULT_SPEED, int acceleration = LowLevelParams.DEFAULT_ACCELARATION)
         {
             Speed = speed;
             Acceleration = acceleration;

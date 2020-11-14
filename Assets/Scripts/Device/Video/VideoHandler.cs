@@ -1,8 +1,9 @@
-﻿using System.Collections;
-using Core;
+﻿using System;
+using System.Collections;
 using Core.GameEvents;
 using Device.Data;
 using Device.Utils;
+using Device.Video.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils.Extensions;
@@ -25,7 +26,7 @@ namespace Device.Video
         private CameraIdentificationSettings cameraIdentificationSettings;
 
         [Header("Object handler")] 
-        [SerializeField] private ObjectHandler objectHandler;
+        [SerializeField] protected ObjectHandler objectHandler;
         
         /// <summary>
         /// Текущий статус контроллера 
@@ -110,7 +111,7 @@ namespace Device.Video
             Status = VideoStatuses.Play;
             
             SetUpOnPlay();
-            StartCoroutine(Capture());
+            StartCoroutine(ECapture());
             
             return true;
         }
@@ -127,7 +128,7 @@ namespace Device.Video
                 _webCamTexture.Stop();
 
             Status = VideoStatuses.Pause;
-            StopCoroutine(Capture());
+            StopCoroutine(ECapture());
             
             return true;
         }
@@ -137,13 +138,24 @@ namespace Device.Video
         /// Захват изображение происходит с частотой отрисовки камеры.
         /// Изображение сохраняется и указывает сохранить текущую позицию устройства
         /// </summary>
-        public IEnumerator Capture()
+        public IEnumerator ECapture()
         {
+            yield return new WaitForSeconds(1);
+            
             while (Status == VideoStatuses.Play)
             {
                 yield return new WaitForEndOfFrame();
-                SendFrame.SetPixels32(_webCamTexture.GetPixels32());
-                EventManager.RaiseEvent(EventType.DeviceHandlePosition, _cameraType);
+                try
+                {
+                    var pixelsArray = _webCamTexture.GetPixels32();
+                    SendFrame.SetPixels32(pixelsArray);
+                    EventManager.RaiseEvent(EventType.DeviceHandlePosition, _cameraType);
+                    //Debug.Log($"Camera [{_cameraType} : {_webCamTexture.deviceName}]: frame is ready");
+                }
+                catch (Exception ex)
+                {        
+                    Debug.Log($"Camera [{_cameraType} : {_webCamTexture.deviceName}]: {ex}");
+                }
                 yield return _webCamFrameRateWait;
             }
         }
@@ -169,15 +181,16 @@ namespace Device.Video
         /// <summary>
         /// Вызывается при авторизации камер 
         /// </summary>
-        private void OnCameraAuthorized(object[] args)
+        protected void OnCameraAuthorized(object[] args)
         {
             var idName = cameraIdentificationSettings.GetName(_cameraType);
             _webCamDevice = WebCamTexture.devices.GetByIdentificationName(idName);
-            _webCamTexture = new WebCamTexture(_webCamDevice.name);
-
+            _webCamTexture = _cameraType == CameraTypes.WideField
+                ? new WebCamTexture(_webCamDevice.name, WideFieldParams.WIDTH, WideFieldParams.HEIGHT)
+                : new WebCamTexture(_webCamDevice.name, TightFiledParams.WIDTH, TightFiledParams.HEIGHT);
+                
             Status = VideoStatuses.Authorized;
-            if(_cameraType == CameraTypes.WideField)
-                Play();
+            Play();
         }
         
         #endregion

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using Core;
+using System.Collections;
 using Core.GameEvents;
 using Device.Hardware.HighLevel.Utils;
-using Device.Hardware.LowLevel;
 using Device.Utils;
 using UnityEngine;
-using Utils.Extensions;
 using EventType = Core.GameEvents.EventType;
 
 namespace Device.Hardware.HighLevel
@@ -17,10 +14,10 @@ namespace Device.Hardware.HighLevel
     public abstract class CameraBaseController: MonoBehaviour
     {
         /// <summary>
-        /// Неопределенные координты (передаются в том случае, если нужно находиться либо в пассивном режиме, либо никуда не нужно двигаться)
+        /// Минимально допустимая координата изображения
         /// </summary>
-        protected static readonly Vector2Int PassiveHuntingFlag = new Vector2Int(-1, -1);
-
+        protected static readonly Vector2Int MinImagePosition = Vector2Int.zero;
+        
         /// <summary>
         /// Тип камеры
         /// </summary>
@@ -34,23 +31,24 @@ namespace Device.Hardware.HighLevel
         /// <summary>
         /// Текущая позиция устройства (в шагах)
         /// </summary>
-        public abstract Vector2Int CurrentPosition { get; }
+        public abstract Vector2Int CurrentPosition { get; set; }
         
         /// <summary>
         /// Последняя переданная позиция наведения (в пикселях)
         /// </summary>
-        public ILastHandledPosition LastHandledPosition { get; protected set; }
-
-        private SerialPortController _serialPortController;
-
+        public IPositionController PositionController { get; protected set; }
+        
+        [HideInInspector]
+        public bool updateCurrentPosition;
+        
         protected Vector2Int CashedDevicePosition;
         private Vector2Int _handledPosition;
 
-        public virtual void Initialize(SerialPortController serialPortController)
+        public virtual void Initialize()
         {
-            _serialPortController = serialPortController;
             SetSubscription();
-
+            StartCoroutine(EUpdateCurrentPosition());
+            
             IsInitialized = true;
         }
 
@@ -60,6 +58,20 @@ namespace Device.Hardware.HighLevel
         public void CashPosition()
         {
             CashedDevicePosition = _handledPosition;
+        }
+
+        /// <summary>
+        /// Обновляет текущую позицию по расчетам 
+        /// </summary>
+        private IEnumerator EUpdateCurrentPosition()
+        {
+            while (!IsDisposed)
+            {
+                if (updateCurrentPosition)
+                    CurrentPosition = PositionController.UpdateCurrentPosition(CurrentPosition, ref updateCurrentPosition);
+                
+                yield return null;
+            }
         }
         
         #region GAMEEVENTS
@@ -116,10 +128,7 @@ namespace Device.Hardware.HighLevel
                 
                 if (disposing)
                 {
-                    //Это ссылка на объект HardwareController._serialPortController
-                    //Вызов _serialPortController.Dispose происходит в HardwareController.OnDisable()
                     ResetSubscription();
-                    _serialPortController = null;
                 }
             }
         }

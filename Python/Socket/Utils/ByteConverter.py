@@ -47,4 +47,5 @@ def GetBytesFromShort(value: int):
 
 # Возвращает массив байтов, эквивалентых значению типа byte
 def GetBytesFromByteInteger(value: int):
-    return value.to_bytes(1, byteorder='little')
+    # ToDo: "signed" flag can be error
+    return value.to_bytes(1, byteorder='little', signed=False)

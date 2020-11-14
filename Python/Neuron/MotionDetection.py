@@ -1,4 +1,3 @@
-import random
 import time
 from threading import Thread, RLock
 
@@ -23,12 +22,11 @@ class MotionDetection(Thread):
         self.start()
 
     def run(self):
-        # anyDrawn = False
         while not self.__isDisposed:
             workData = {}
             fixTime = time.time()
-            self.Locker.acquire()
 
+            self.Locker.acquire()
             try:
                 length = len(self.Buffer)
                 if length == 0:
@@ -42,11 +40,10 @@ class MotionDetection(Thread):
 
             prob, center, size = TankCapture.Execute(workData['image'])
 
-            # anyDrawn = True
             if self.__isDisposed:
                 break
 
-            responseObject = WideFieldPositionMessage(center, size)
+            responseObject = WideFieldPositionMessage(prob, center, size)
             if not workData['client'].fileno() == -1:
                 workData['client'].send(responseObject.Serialize())
 
@@ -58,14 +55,10 @@ class MotionDetection(Thread):
         finally:
             self.Locker.release()
 
-        # if anyDrawn:
-        #     cv2.destroyAllWindows()
-
         print("Motion detection closed!")
 
     def OnMessageReceive(self, kwargs):
         image = JpgDecoder.Decode(kwargs['message'].JpgImageData)
-        # byteArray = img_to_array(JpgDecoder.Decode(kwargs['message']))
 
         self.Locker.acquire()
         try:

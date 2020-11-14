@@ -58,7 +58,7 @@ namespace Device.UI
         /// <summary>
         /// Выводит имена всех найденных камер и возвращает их количество
         /// </summary>
-        private static int FindWebCams()
+        public static int FindWebCams()
         {
             var devices = WebCamTexture.devices;
             if(devices.Any())

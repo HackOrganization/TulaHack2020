@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using Device.Hardware.HighLevel;
-using Device.Hardware.LowLevel.Utils;
+using Device.Hardware.LowLevel.Controllers;
 using Device.Hardware.LowLevel.Utils.Communication;
 using Device.Hardware.LowLevel.Utils.Communication.Infos;
 using UnityEngine;
+using Utils;
+
+using LowLevelUtils = Device.Hardware.LowLevel.Utils;
 
 namespace Device.Hardware.LowLevel
 {
@@ -14,7 +17,7 @@ namespace Device.Hardware.LowLevel
     /// Контроллер управления железом.
     /// Отвечает за передачу команд навигации на порт устройства.
     /// </summary>
-    public class HardwareController: MonoBehaviour
+    public class HardwareController: Singleton<HardwareController>
     {
         [Header("Camera controllers")] 
         [SerializeField] protected CameraBaseController wideFieldController;
@@ -27,7 +30,7 @@ namespace Device.Hardware.LowLevel
         /// <summary>
         /// Перечисление наводящихся камер
         /// </summary>
-        private IEnumerable<CameraBaseController> CameraBaseControllers => new[]
+        protected CameraBaseController[] CameraBaseControllers => new[]
         {
             wideFieldController, tightFieldController
         };
@@ -35,46 +38,33 @@ namespace Device.Hardware.LowLevel
         /// <summary>
         /// Широкопольная наводящаяся камера
         /// </summary>
-        public WideFieldCameraController WideFieldCameraController => (WideFieldCameraController)wideFieldController;
+        public WideFieldHighLevelController WideFieldHighLevelController => (WideFieldHighLevelController)wideFieldController;
         
         /// <summary>
         /// Узкопольная наводящаяся камера
         /// </summary>
-        public TightFieldCameraController TightFieldCameraController => (TightFieldCameraController)tightFieldController;
+        public TightFieldHighLevelController TightFieldHighLevelController => (TightFieldHighLevelController)tightFieldController;
 
-        private bool _isDisabled;
-        private bool _calibrateDone;
+        protected bool _isDisabled;
+        protected bool _calibrateDone;
+        protected bool _positionRequested;
         private int _wrappersInvokedCount;
-        private SerialPortController _serialPortController;
-        private readonly List<SerialPortDetectorThreadWrapper> _threadWrappers = new List<SerialPortDetectorThreadWrapper>();
+        protected SerialPortController _serialPortController;
+        protected readonly TrackModeController _trackModeController = new TrackModeController();
+        private readonly List<LowLevelUtils.SerialPortDetectorThreadWrapper> _threadWrappers = new List<LowLevelUtils.SerialPortDetectorThreadWrapper>();
 
-        private WaitUntil _untilPortOpened;
-        private WaitForSeconds _loopWait;
+        protected WaitUntil _untilPortOpened;
+        protected WaitForSeconds _loopWait;
         
         #region INITIALIZATION
 
         public void Initialize()
         {
             _untilPortOpened = new WaitUntil(() => _serialPortController != null && _serialPortController.IsOpened);
-            _loopWait = new WaitForSeconds(1f / SerialPortParams.TIMEOUT);
+            _loopWait = new WaitForSeconds(1f / LowLevelUtils.SerialPortParams.TIMEOUT);
 
-            //ToDo: Comment TEST_LockSearchingDevice, uncomment StartSearchingDevice
-            TEST_LockSearchingDevice();
-            //StartSearchingDevice();
-
-            StartCoroutine(CorSendPosition());
-        }
-
-        private void TEST_LockSearchingDevice()
-        {
-            
-            _serialPortController = SerialPortParams.NewSerialPort(SerialPort.GetPortNames()[0]);
-            _serialPortController.onMessageReceived += OnMessageReceived;
-            
-            foreach (var cameraBaseController in CameraBaseControllers)
-                cameraBaseController.Initialize(_serialPortController);
-            
-            _serialPortController.Start();
+            StartSearchingDevice();
+            StartCoroutine(EWork());
         }
         
         /// <summary>
@@ -84,7 +74,8 @@ namespace Device.Hardware.LowLevel
         {
             foreach (var portName in SerialPort.GetPortNames())
             {
-                var wrapper = new SerialPortDetectorThreadWrapper(portName);
+                Debug.Log($"");
+                var wrapper = new LowLevelUtils.SerialPortDetectorThreadWrapper(portName);
                 wrapper.onCompleted += OnDetectionCompleted;
                 _threadWrappers.Add(wrapper);
                 wrapper.Start();
@@ -95,7 +86,7 @@ namespace Device.Hardware.LowLevel
         /// Перехватывает событие SerialPortDetectorThreadWrapper.onCompleted
         /// Это событие как определяет порт нужного устройства, так и фиксирует порты других устройств
         /// </summary>
-        private void OnDetectionCompleted(object sender, SerialPortDetectorEventArgs args)
+        private void OnDetectionCompleted(object sender, LowLevelUtils.SerialPortDetectorEventArgs args)
         {
             if (args.Result)
             {
@@ -107,10 +98,10 @@ namespace Device.Hardware.LowLevel
                     wrapper.CancelRequest();
 
                 foreach (var cameraBaseController in CameraBaseControllers)
-                    cameraBaseController.Initialize(_serialPortController);
+                    cameraBaseController.Initialize();
             }
 
-            ((SerialPortDetectorThreadWrapper) sender).onCompleted -= OnDetectionCompleted;
+            ((LowLevelUtils.SerialPortDetectorThreadWrapper) sender).onCompleted -= OnDetectionCompleted;
 
             if (++_wrappersInvokedCount == _threadWrappers.Count)
             {
@@ -126,34 +117,46 @@ namespace Device.Hardware.LowLevel
         /// Основной цикл работы устройства наведения
         /// дожидается инициалиации порта, калбировки устройства и отправляет комманды наведения, если таковые имеются
         /// </summary>
-        private IEnumerator CorSendPosition()
+        protected virtual IEnumerator EWork()
         {
             yield return _untilPortOpened;
 
-            Debug.Log("Start calibration....");
             _serialPortController.Send(CommunicationParams.GetCalibrationMessage());
             yield return new WaitUntil(()=> _calibrateDone);
             
-            //ToDo: не реализован режим пассивного слежения
             while (!_isDisabled)
             {
                 var success = false;
-                var moveInfosArray = new MoveInfo[CommunicationParams.DEVICES_COUNT];
+                var moveInfosArray = new MoveInfo[LowLevelUtils.Params.DEVICES_COUNT];
                 var index = 0;
                 foreach (var controller in CameraBaseControllers)
                 {
-                    var enumMoveInfos = controller.LastHandledPosition.ToMoveInfos(ref success);
+                    var enumMoveInfos = controller.PositionController.TowardsInfos(ref success);
                     foreach (var mi in enumMoveInfos)
                         moveInfosArray[index++] = mi;
                 }
                 
-                //Если какая-то из координат была обновлена, тогда отправляем команду наведения
                 if (success)
                 {
+                    //Если какая-то из координат была обновлена, тогда отправляем команду наведения
                     var moveMessage = CommunicationParams.GetMoveMessage(moveInfosArray);
                     _serialPortController.Send(moveMessage);
+                    _trackModeController.Reset();
                 }
+                else if (!_trackModeController.SetUp())
+                {
+                    //если режим слежения не нужно запускать, то запрашивает текущие координаты для уточнения
+                    _positionRequested = true;
+                    _serialPortController.Send(CommunicationParams.GetPositionRequestMessage());    
+                }
+                
+                foreach (var controller in CameraBaseControllers)
+                    controller.updateCurrentPosition = success;
+                
                 yield return _loopWait;
+                
+                if(_positionRequested)
+                    yield return new WaitUntil(()=> !_positionRequested);
             }
         }
 
@@ -162,12 +165,26 @@ namespace Device.Hardware.LowLevel
         /// </summary>
         private void OnMessageReceived(string message)
         {
-            switch (message)
+            if (message.Equals(CommunicationParams.CALIBRATION_RESPONSE))
             {
-                case CommunicationParams.CALIBRATION_RESPONSE:
-                    _calibrateDone = true;
-                    break;
+                _calibrateDone = true;
             }
+            else if (message.StartsWith(CommunicationParams.POSITION_FLAG.ToString()))
+            {
+                var newPositions = CommunicationParams.ParsePositionResponse(message);
+                SetUpNewPositions(in newPositions);
+                _positionRequested = false;
+            }
+        }
+
+        /// <summary>
+        /// Устанавливает новые позиции камер (в шагах) на основании ответа от контроллера 
+        /// </summary>
+        protected virtual void SetUpNewPositions(in Vector2Int[] newPositions)
+        {
+            var cameraControllers = CameraBaseControllers;
+            for (var i = 0; i < cameraControllers.Length; i++)
+                cameraControllers[i].CurrentPosition = newPositions[i];
         }
 
         private void OnDisable()

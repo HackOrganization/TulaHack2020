@@ -1,4 +1,4 @@
-﻿namespace Device.Video
+﻿namespace Device.Video.Utils
 {
     public enum VideoStatuses
     {
