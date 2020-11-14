@@ -1,28 +1,11 @@
-from imutils.video import VideoStream
-import numpy as np
-import imutils
-import time
-import cv2
-import os
-import time  # !!!!!!!!!
-import os
-import numpy as np
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import GlobalAveragePooling2D, Input, Dense
-from tensorflow.keras.preprocessing.image import array_to_img, img_to_array
-from tensorflow.keras import regularizers
-import IPython
-import matplotlib.pyplot as plt
+import random
 
-import matplotlib.cm as cm
+import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import load_model
-from tensorflow.keras.applications.xception import Xception
+from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
-from tensorflow.keras.applications.xception import preprocess_input
-from tensorflow.keras.applications.xception import decode_predictions
-from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.image import img_to_array
 
 img_width, img_height = 640, 480
 print("Loading models....")
@@ -101,12 +84,20 @@ def Execute(frame, packetId):
     print(F"Packet: {packetId}. Probability: {probability}. Center: {centerIndex}")
     # cv2.imshow("Heatmap", np.kron(heatMap, np.ones((30, 30))))
 
-    return probability, centerIndex
+    return probability, centerIndex, FindSize(centerIndex)
 
 
 def FindCenter(probability, heatMap):
     if probability < 16:
         return -1, -1
 
-    centerIndex = np.unravel_index(np.argmax(heatMap), heatMap.shape) # x, y
-    return int(img_height / len(heatMap) * centerIndex[1]), int(img_width / len(heatMap[centerIndex[0]]) * centerIndex[0])
+    centerIndex = np.unravel_index(np.argmax(heatMap), heatMap.shape)  # x, y
+    return int(img_height / len(heatMap) * centerIndex[1]), int(
+        img_width / len(heatMap[centerIndex[0]]) * centerIndex[0])
+
+
+def FindSize(centerIndex):
+    if centerIndex == (-1, -1):
+        return 0, 0
+
+    return random.randint(100, 120), random.randint(100, 120)

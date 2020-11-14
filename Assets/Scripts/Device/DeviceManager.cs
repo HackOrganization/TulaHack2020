@@ -46,8 +46,9 @@ namespace Device
             => deviceControllers.First(d => d.cameraType == CameraTypes.WideField);
 
         private bool _isDisposed;
+        private bool _captureLocked;
         private WaitUntil _untilAllReady;
-        private WaitForSeconds _loopAwait;
+        private WaitUntil _notCaptureLocked;
         
         /// <summary>
         /// Функция последовательной инициализации
@@ -56,9 +57,10 @@ namespace Device
         {
             Application.targetFrameRate = 200;
             EventManager.AddHandler(EventType.EndWork, OnEndWork);
+            EventManager.AddHandler(EventType.CaptureNewImage, OnWideFieldMessageResponse);
             
             _untilAllReady = new WaitUntil(ComponentsAreReady);
-            _loopAwait = new WaitForSeconds(Params.CAPTURE_PER_SECOND);
+            _notCaptureLocked = new WaitUntil(()=> !_captureLocked);
             
             var deviceConnectionPoints = DeviceConnectionPoints;
             for (var i = 0; i < deviceControllers.Length; i++)
@@ -73,6 +75,7 @@ namespace Device
         private void OnDisable()
         {
             EventManager.RemoveHandler(EventType.EndWork, OnEndWork);
+            EventManager.RemoveHandler(EventType.CaptureNewImage, OnWideFieldMessageResponse);
             StopCoroutine(CorRun());
             _isDisposed = true;
         }
@@ -85,6 +88,17 @@ namespace Device
             return deviceControllers.All(d => d.IsReady) && hardwareController.IsReady;
         }
 
+        /// <summary>
+        /// Перехватывает событие получения ответа на отправленный кадр ШПК 
+        /// </summary>
+        private void OnWideFieldMessageResponse(object[] args)
+        {
+            if((CameraTypes)args[0] != CameraTypes.WideField)
+                return;
+            
+            _captureLocked = false;
+        }
+        
         /// <summary>
         /// перехватывает сообщение об окончании работы 
         /// </summary>
@@ -114,14 +128,14 @@ namespace Device
             var counter = 0;
             while (!_isDisposed)
             {
+                _captureLocked = true;
                 yield return new WaitForEndOfFrame();
 
                 var packetId = hardwareController.WideFieldCameraController.FixPosition();
                 WideFieldDevice.OnSendImageRequest(packetId);
-                yield return _loopAwait;
                 
-                //ToDo: поставлено в целях теста отправки одного изображения
                 Debug_PrintInfo(counter++);
+                yield return _notCaptureLocked;
                 
                 if(!ComponentsAreReady())
                     //ToDo: dispose all controllers (Neural, AsyncClient, Hardware...)

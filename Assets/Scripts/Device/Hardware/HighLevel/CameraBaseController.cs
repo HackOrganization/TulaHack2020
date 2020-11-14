@@ -61,6 +61,7 @@ namespace Device.Hardware.HighLevel
         /// </summary>
         public ushort FixPosition()
         {
+            //ToDo: Удалить нахер словарь, отправлять только кадр по готовности, хранить только одну запись
             var newIndex = FramePositionMap.Keys.GetNextFree();
             FramePositionMap.Add(newIndex, CurrentPosition);
 

@@ -1,16 +1,13 @@
-import cv2
-import time
 import random
-import Neuron.Utils.Params as Params
-
+import time
 from threading import Thread, RLock
+
+import Neuron.TankCapture as TankCapture
+import Neuron.Utils.Params as Params
 from Core.EventManager import EventManager
 from Core.Utils.EventType import EventType
 from Neuron.Utils.JpgDecoder import JpgDecoder
-from keras.preprocessing.image import img_to_array
 from Socket.Messages.WideFieldPositionMessage import WideFieldPositionMessage
-
-import Neuron.TankCapture as TankCapture
 
 
 class MotionDetection(Thread):
@@ -44,7 +41,7 @@ class MotionDetection(Thread):
             for packetId in keys:
                 item = self.WorkDictionary.pop(packetId)
                 # Detect
-                prob, center = TankCapture.Execute(item['image'], packetId)
+                prob, center, size = TankCapture.Execute(item['image'], packetId)
 
                 # anyDrawn = True
                 if self.__isDisposed:
@@ -53,8 +50,8 @@ class MotionDetection(Thread):
                     packetId,
                     center[0],
                     center[1],
-                    random.randint(100, 120),
-                    random.randint(100, 120))
+                    size[0],
+                    size[1])
 
                 item['client'].send(responseObject.Serialize())
                 # print(f"[WideField] Sent object [{packetId}] | {responseObject.PositionX}:{responseObject.PositionY} | [{responseObject.SizeX}:{responseObject.SizeY}]")

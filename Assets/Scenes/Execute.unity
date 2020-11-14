@@ -699,13 +699,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.45490196}
+  m_Color: {r: 1, g: 0, b: 0, a: 0.87058824}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 0}
+  m_Texture: {fileID: 2800000, guid: ff134847231351146a24fe120f03fdb9, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -1024,6 +1024,7 @@ GameObject:
   - component: {fileID: 1952883712}
   - component: {fileID: 1952883713}
   - component: {fileID: 1952883710}
+  - component: {fileID: 1952883714}
   m_Layer: 0
   m_Name: Devices
   m_TagString: Untagged
@@ -1075,7 +1076,7 @@ MonoBehaviour:
   autoRun: 1
   deviceControllers:
   - {fileID: 858799765}
-  hardwareController: {fileID: 1952883713}
+  hardwareController: {fileID: 1952883714}
   fpsText: {fileID: 589399608}
   tickText: {fileID: 1805002027}
 --- !u!114 &1952883713
@@ -1085,13 +1086,29 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1952883709}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 90ea5b8ad97d4237932e45d23041ae8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   wideFieldController: {fileID: 858799763}
   tightFieldController: {fileID: 937409899}
+--- !u!114 &1952883714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1952883709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d45b8ffc9f5540af8e745eb64c744c4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wideFieldController: {fileID: 858799763}
+  tightFieldController: {fileID: 937409899}
+  autoExecute: 0
+  speed: 3
 --- !u!1 &1954703008
 GameObject:
   m_ObjectHideFlags: 0
