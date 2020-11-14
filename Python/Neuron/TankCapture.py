@@ -1,3 +1,4 @@
+import os
 import random
 
 import numpy as np
@@ -6,6 +7,8 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
+
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 img_width, img_height = 640, 480
 print("Loading models....")
@@ -72,22 +75,19 @@ def detect_tank(frame):
     return tank_probability, heatmap  # !!!!!
 
 
-def Execute(frame, packetId):
+def Execute(frame):
     frame = img_to_array(frame)
 
     probability, heatMap = detect_tank(frame)
-    # heatMap: 20x15
 
     probability = round(probability * 100, 1)
     centerIndex = FindCenter(probability, heatMap)
 
-    print(F"Packet: {packetId}. Probability: {probability}. Center: {centerIndex}")
-    # cv2.imshow("Heatmap", np.kron(heatMap, np.ones((30, 30))))
-
+    # print(F"Packet. Probability: {probability}. Center: {centerIndex}")
     return probability, centerIndex, FindSize(centerIndex)
 
 
-def FindCenter(probability, heatMap):
+def FindCenter(probability, heatMap):  # heatMap: 20x15
     if probability < 16:
         return -1, -1
 
@@ -100,4 +100,5 @@ def FindSize(centerIndex):
     if centerIndex == (-1, -1):
         return 0, 0
 
+    # ToDo: find real size
     return random.randint(100, 120), random.randint(100, 120)

@@ -59,8 +59,8 @@ namespace Device.Hardware.LowLevel
             _loopWait = new WaitForSeconds(1f / SerialPortParams.TIMEOUT);
 
             //ToDo: Comment TEST_LockSearchingDevice, uncomment StartSearchingDevice
-            //TEST_LockSearchingDevice();
-            StartSearchingDevice();
+            TEST_LockSearchingDevice();
+            //StartSearchingDevice();
 
             StartCoroutine(CorSendPosition());
         }

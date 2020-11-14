@@ -14,7 +14,6 @@ def SendResponse(client: SocketLib.socket, messageType: MessageTypes, message):
         # Send message to MotionDetection controller
         EventManager.RaiseEvent(EventType.WideFieldImageGotten, kwargs={'client': client, 'message': message})
 
-
     elif messageType == MessageTypes.TightFieldImage:
         # ToDo: Save Id
         # ToDo: Send to neural

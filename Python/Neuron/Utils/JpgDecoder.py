@@ -20,8 +20,8 @@ class JpgDecoder:
         image.encoderconfig = (-1, False, 0, False, 0, 0, 0, -1, None, bytes(), bytes())
 
     @staticmethod
-    def Decode(message: ImageMessage):
-        with BytesIO(message.JpgImageData) as stream:
+    def Decode(messageImage: bytes):
+        with BytesIO(messageImage) as stream:
             image = Image.open(stream)
             JpgDecoder.save(image)
             #imageName = f"server{message.PacketId}.jpg"

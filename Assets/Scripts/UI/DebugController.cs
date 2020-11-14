@@ -16,7 +16,7 @@ namespace UI
         {
             var newTimePoint = Time.time;
             
-            fpsText.text = $"FPS:\n{Time.captureFramerate}";
+            fpsText.text = $"FPS:\n{1f / Time.deltaTime : ###.##}";
             neuronFpsText.text = $"Neuron FPS:\n{1f / (newTimePoint - _lastTimePoint) :###.##}";
             tickText.text = $"TICK:\n{++_counter}";
             
