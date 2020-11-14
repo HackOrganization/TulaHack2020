@@ -1,14 +1,14 @@
 ﻿using System.Collections;
 using System.Linq;
 using System.Net;
-using Core;
+using Core.GameEvents;
 using Core.OrderStart;
 using Device.Hardware.LowLevel;
 using Device.Utils;
+using UI;
 using UnityEngine;
-using UnityEngine.UI;
 using Utils;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 using NetworkingParams = Networking.Utils.Params;
 
 namespace Device
@@ -26,10 +26,6 @@ namespace Device
         
         [Header("Hardware info")] 
         [SerializeField] private HardwareController hardwareController;
-
-        [Header("Debug")] 
-        [SerializeField] private Text fpsText;
-        [SerializeField] private Text tickText;
 
         /// <summary>
         /// Точки подключения устройств для обмена сообщениями
@@ -49,15 +45,17 @@ namespace Device
         private bool _captureLocked;
         private WaitUntil _untilAllReady;
         private WaitUntil _notCaptureLocked;
+        private DebugController _debugController;
         
         /// <summary>
         /// Функция последовательной инициализации
         /// </summary>
         public void OnStart()
         {
-            Application.targetFrameRate = 200;
-            EventManager.AddHandler(EventType.EndWork, OnEndWork);
-            EventManager.AddHandler(EventType.CaptureNewImage, OnWideFieldMessageResponse);
+            _debugController = FindObjectOfType<DebugController>();
+            
+            Application.targetFrameRate = 300;
+            SetSubscription();
             
             _untilAllReady = new WaitUntil(ComponentsAreReady);
             _notCaptureLocked = new WaitUntil(()=> !_captureLocked);
@@ -74,8 +72,7 @@ namespace Device
         
         private void OnDisable()
         {
-            EventManager.RemoveHandler(EventType.EndWork, OnEndWork);
-            EventManager.RemoveHandler(EventType.CaptureNewImage, OnWideFieldMessageResponse);
+            ResetSubscription();
             StopCoroutine(CorRun());
             _isDisposed = true;
         }
@@ -86,25 +83,6 @@ namespace Device
         private bool ComponentsAreReady()
         {
             return deviceControllers.All(d => d.IsReady) && hardwareController.IsReady;
-        }
-
-        /// <summary>
-        /// Перехватывает событие получения ответа на отправленный кадр ШПК 
-        /// </summary>
-        private void OnWideFieldMessageResponse(object[] args)
-        {
-            if((CameraTypes)args[0] != CameraTypes.WideField)
-                return;
-            
-            _captureLocked = false;
-        }
-        
-        /// <summary>
-        /// перехватывает сообщение об окончании работы 
-        /// </summary>
-        private void OnEndWork(params object[] args)
-        {
-            _isDisposed = (bool) args[0];
         }
 
         /// <summary>
@@ -125,16 +103,15 @@ namespace Device
             //КОСТЫЛЬ КОСТЫЛЕЙ
             yield return new WaitForSeconds(1);
 
-            var counter = 0;
             while (!_isDisposed)
             {
                 _captureLocked = true;
-                yield return new WaitForEndOfFrame();
-
-                var packetId = hardwareController.WideFieldCameraController.FixPosition();
-                WideFieldDevice.OnSendImageRequest(packetId);
                 
-                Debug_PrintInfo(counter++);
+                hardwareController.WideFieldCameraController.CashPosition();
+                WideFieldDevice.OnSendImageRequest();
+                
+                _debugController.Log();
+                Debug.Log("Image sent");
                 yield return _notCaptureLocked;
                 
                 if(!ComponentsAreReady())
@@ -143,10 +120,46 @@ namespace Device
             }
         }
 
-        private void Debug_PrintInfo(in int counter)
+        #region GAMEEVENTS
+
+        /// <summary>
+        /// Устанавливает подписки на глоабльные события
+        /// </summary>
+        private void SetSubscription()
         {
-            fpsText.text = $"FPS:\n{1f / Time.deltaTime :###.##}";
-            tickText.text = $"TICK:\n{counter}";
+            EventManager.AddHandler(EventType.EndWork, OnEndWork);
+            EventManager.AddHandler(EventType.CaptureNewImage, OnWideFieldMessageResponse);
         }
+
+        
+        /// <summary>
+        /// Отписывается от рассылки глоабльных событий
+        /// </summary>
+        private void ResetSubscription()
+        {
+            EventManager.RemoveHandler(EventType.EndWork, OnEndWork);
+            EventManager.RemoveHandler(EventType.CaptureNewImage, OnWideFieldMessageResponse);
+        }
+        
+        /// <summary>
+        /// Перехватывает событие получения ответа на отправленный кадр ШПК 
+        /// </summary>
+        private void OnWideFieldMessageResponse(object[] args)
+        {
+            if((CameraTypes)args[0] != CameraTypes.WideField)
+                return;
+            
+            _captureLocked = false;
+        }
+        
+        /// <summary>
+        /// перехватывает сообщение об окончании работы 
+        /// </summary>
+        private void OnEndWork(params object[] args)
+        {
+            _isDisposed = (bool) args[0];
+        }
+        
+        #endregion
     }
 }

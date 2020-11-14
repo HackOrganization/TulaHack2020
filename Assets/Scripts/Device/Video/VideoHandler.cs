@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using Core;
+using Core.GameEvents;
 using Device.Data;
 using Device.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils.Extensions;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.Video
 {
@@ -26,7 +27,6 @@ namespace Device.Video
         [Header("Object handler")] 
         [SerializeField] private ObjectHandler objectHandler;
         
-
         /// <summary>
         /// Текущий статус контроллера 
         /// </summary>
@@ -47,34 +47,23 @@ namespace Device.Video
         private Vector2Int _webCamResolution;
         private WebCamTexture _webCamTexture;
         private WebCamDevice _webCamDevice;
+        private WaitForSeconds _webCamFrameRateWait;
 
         public void Initialize(CameraTypes cameraType)
         {
-            EventManager.AddHandler(EventType.CameraAuthorized, OnCameraAuthorized);
+            SetSubscription();
             _cameraType = cameraType;
+            _webCamFrameRateWait = new WaitForSeconds(1f / Params.WEB_CAM_FPS);
         }
 
         private void OnDestroy()
         {
-            EventManager.RemoveHandler(EventType.CameraAuthorized, OnCameraAuthorized);
+            ResetSubscription();
         }
 
         /// <summary>
-        /// Вызывается при авторизации камер 
-        /// </summary>
-        private void OnCameraAuthorized(object[] args)
-        {
-            var idName = cameraIdentificationSettings.GetName(_cameraType);
-            _webCamDevice = WebCamTexture.devices.GetByIdentificationName(idName);
-            _webCamTexture = new WebCamTexture(_webCamDevice.name);
-
-            Status = VideoStatuses.Authorized;
-            if(_cameraType == CameraTypes.WideField)
-                Play();
-        }
-
-        /// <summary>
-        /// 
+        /// Устанавливает необхолдимые настройки арботы с изображением после включения камеры
+        /// (необходим экземпляр изображения для работы)
         /// </summary>
         private void SetUpOnPlay()
         {
@@ -121,6 +110,7 @@ namespace Device.Video
             Status = VideoStatuses.Play;
             
             SetUpOnPlay();
+            StartCoroutine(Capture());
             
             return true;
         }
@@ -137,16 +127,59 @@ namespace Device.Video
                 _webCamTexture.Stop();
 
             Status = VideoStatuses.Pause;
-
+            StopCoroutine(Capture());
+            
             return true;
         }
 
         /// <summary>
         /// Захватывает изображение с камеры для дальнейшей передачи
+        /// Захват изображение происходит с частотой отрисовки камеры.
+        /// Изображение сохраняется и указывает сохранить текущую позицию устройства
         /// </summary>
-        public void Capture()
+        public IEnumerator Capture()
         {
-            SendFrame.SetPixels32(_webCamTexture.GetPixels32());
+            while (Status == VideoStatuses.Play)
+            {
+                yield return new WaitForEndOfFrame();
+                SendFrame.SetPixels32(_webCamTexture.GetPixels32());
+                EventManager.RaiseEvent(EventType.DeviceHandlePosition, _cameraType);
+                yield return _webCamFrameRateWait;
+            }
         }
+        
+        #region GAMEEVENTS
+        
+        /// <summary>
+        /// Устанавливает подписки на глоабльные события
+        /// </summary>
+        private void SetSubscription()
+        {
+            EventManager.AddHandler(EventType.CameraAuthorized, OnCameraAuthorized);
+        }
+        
+        /// <summary>
+        /// Отписывается от рассылки глоабльных событий
+        /// </summary>
+        private void ResetSubscription()
+        {
+            EventManager.RemoveHandler(EventType.CameraAuthorized, OnCameraAuthorized);
+        }
+        
+        /// <summary>
+        /// Вызывается при авторизации камер 
+        /// </summary>
+        private void OnCameraAuthorized(object[] args)
+        {
+            var idName = cameraIdentificationSettings.GetName(_cameraType);
+            _webCamDevice = WebCamTexture.devices.GetByIdentificationName(idName);
+            _webCamTexture = new WebCamTexture(_webCamDevice.name);
+
+            Status = VideoStatuses.Authorized;
+            if(_cameraType == CameraTypes.WideField)
+                Play();
+        }
+        
+        #endregion
     }
 }

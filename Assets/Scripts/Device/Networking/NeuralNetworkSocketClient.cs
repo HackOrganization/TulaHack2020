@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Net;
 using Core;
+using Core.GameEvents;
 using Device.Utils;
 using Networking.Client;
 using Networking.Message;
 using Networking.Message.Utils;
 using UnityEngine;
 using Utils.Extensions;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.Networking
 {
@@ -80,8 +81,10 @@ namespace Device.Networking
 
         private void OnWideFieldPositionCaught(WideFieldPositionMessage message)
         {
-            //EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, message.PacketId, message.Position);
-            EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, message.Position, message.Size);
+            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, message.Position, message.Size);
+            
+            Debug.Log("Unlock capture image");
+            EventManager.RaiseEvent(EventType.CaptureNewImage, CameraTypes.WideField);
         }
         
         #endregion

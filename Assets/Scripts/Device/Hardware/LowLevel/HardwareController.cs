@@ -59,8 +59,8 @@ namespace Device.Hardware.LowLevel
             _loopWait = new WaitForSeconds(1f / SerialPortParams.TIMEOUT);
 
             //ToDo: Comment TEST_LockSearchingDevice, uncomment StartSearchingDevice
-            //TEST_LockSearchingDevice();
-            StartSearchingDevice();
+            TEST_LockSearchingDevice();
+            //StartSearchingDevice();
 
             StartCoroutine(CorSendPosition());
         }
@@ -93,6 +93,7 @@ namespace Device.Hardware.LowLevel
 
         /// <summary>
         /// Перехватывает событие SerialPortDetectorThreadWrapper.onCompleted
+        /// Это событие как определяет порт нужного устройства, так и фиксирует порты других устройств
         /// </summary>
         private void OnDetectionCompleted(object sender, SerialPortDetectorEventArgs args)
         {
@@ -122,11 +123,12 @@ namespace Device.Hardware.LowLevel
         #endregion
 
         /// <summary>
-        /// Отправляет с периодичностью
+        /// Основной цикл работы устройства наведения
+        /// дожидается инициалиации порта, калбировки устройства и отправляет комманды наведения, если таковые имеются
         /// </summary>
         private IEnumerator CorSendPosition()
         {
-            yield return _untilPortOpened;//new WaitUntil(() => _serialPortController != null && _serialPortController.IsOpened);
+            yield return _untilPortOpened;
 
             Debug.Log("Start calibration....");
             _serialPortController.Send(CommunicationParams.GetCalibrationMessage());

@@ -5,11 +5,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using Core;
+using Core.GameEvents;
 using Networking.Client;
 using Networking.Utils;
 using UnityAsyncHelper.Core;
 using UnityEngine;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Networking.Server
 {
@@ -96,9 +97,8 @@ namespace Networking.Server
                 ListenerClientMap[server].Add(client);
 
                 client.Receive();
-                ThreadManager.ExecuteOnMainThread(
-                    () => EventManager.RaiseEvent(EventType.ClientConnected, 
-                        client.IsClientSide, client.Socket.LocalEndPoint, client.Socket.RemoteEndPoint));
+                EventManager.RaiseOnMainThread(EventType.ClientConnected, 
+                    client.IsClientSide, client.Socket.LocalEndPoint, client.Socket.RemoteEndPoint);
             }
             catch (Exception e)
             {

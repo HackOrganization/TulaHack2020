@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net;
 using Core;
+using Core.GameEvents;
 using Core.OrderStart;
 using Networking.Client;
 using Networking.Message;
@@ -9,7 +10,7 @@ using Networking.Utils;
 using UnityEngine;
 using Utils;
 using Utils.Extensions;
-using EventType = Core.EventType;
+using EventType = Core.GameEvents.EventType;
 
 namespace Networking.Server
 {
@@ -22,12 +23,38 @@ namespace Networking.Server
 
         public void OnStart()
         {
-            EventManager.AddHandler(EventType.ClientConnected, OnClientConnected);
-            EventManager.AddHandler(EventType.ReceivedMessage, OnMessageReceived);
+            SetSubscription();
             
             AsynchronousServer.StartListening(Params.WideFieldEndPoint, out _wideFieldServer);
         }
 
+        public void OnDisable()
+        {
+            ResetSubscription();
+            
+            _wideFieldServer.Dispose();
+        }
+        
+        #region GAMEEVENTS
+        
+        /// <summary>
+        /// Устанавливает подписки на глоабльные события
+        /// </summary>
+        private void SetSubscription()
+        {
+            EventManager.AddHandler(EventType.ClientConnected, OnClientConnected);
+            EventManager.AddHandler(EventType.ReceivedMessage, OnMessageReceived);
+        }
+        
+        /// <summary>
+        /// Отписывается от рассылки глоабльных событий
+        /// </summary>
+        private void ResetSubscription()
+        {
+            EventManager.RemoveHandler(EventType.ClientConnected, OnClientConnected);
+            EventManager.RemoveHandler(EventType.ReceivedMessage, OnMessageReceived);
+        }
+        
         /// <summary>
         /// Сообщение о подключение клиента
         /// </summary>
@@ -67,31 +94,25 @@ namespace Networking.Server
                 default: return;
             }
         }
-
-        public void OnDisable()
-        {
-            EventManager.RemoveHandler(EventType.ClientConnected, OnClientConnected);
-            EventManager.RemoveHandler(EventType.ReceivedMessage, OnMessageReceived);
-            
-            _wideFieldServer.Dispose();
-        }
+        
+        #endregion
 
         #region SERVER RESPONSES
 
+        private static uint _receivedImageNumber;
         /// <summary>
         /// Отправляет ответ на полченное сообщение с картинкой с широкоугольной камерой 
         /// </summary>
         private static void ResponseOnWideFieldImage(AsynchronousClient client, ImageMessage message)
         {
-            File.WriteAllBytes($"C:\\tmp\\serverImage{message.PacketId}.jpg",message.Image.EncodeToJPG());
+            File.WriteAllBytes($"C:\\tmp\\serverImage{_receivedImageNumber++}.jpg",message.Image.EncodeToJPG());
 
             var newMessage = new WideFieldPositionMessage
             {
-                PacketId = message.PacketId,
                 Position = new Vector2Int(Random.Range(0, 255), Random.Range(0, 255))
             };
             client.Send(newMessage.Serialize());
-            Debug.Log($"[Server] WideField[{newMessage.PacketId}]: send position \"{newMessage.Position}\"");
+            Debug.Log($"[Server] WideField: send position \"{newMessage.Position}\"");
         }
 
         private static void ResponseOnTightFieldImage(AsynchronousClient client, ImageMessage message)

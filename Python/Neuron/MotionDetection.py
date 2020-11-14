@@ -12,8 +12,7 @@ from Socket.Messages.WideFieldPositionMessage import WideFieldPositionMessage
 
 class MotionDetection(Thread):
     __isDisposed: bool = False
-    BufferDictionary: dict = {}
-    WorkDictionary: dict = {}
+    Buffer: list = []
     Locker: RLock = RLock()
 
     def __init__(self):
@@ -26,40 +25,36 @@ class MotionDetection(Thread):
     def run(self):
         # anyDrawn = False
         while not self.__isDisposed:
-            if len(self.BufferDictionary) == 0:
-                time.sleep(Params.FPS)
-                continue
-
+            workData = {}
+            fixTime = time.time()
             self.Locker.acquire()
+
             try:
-                self.WorkDictionary.update(self.BufferDictionary)
-                self.BufferDictionary.clear()
+                length = len(self.Buffer)
+                if length == 0:
+                    time.sleep(Params.FPS)
+                    continue
+
+                workData = self.Buffer.pop(length-1)
+                self.Buffer.clear()
             finally:
                 self.Locker.release()
 
-            keys = list(self.WorkDictionary.keys())
-            for packetId in keys:
-                item = self.WorkDictionary.pop(packetId)
-                # Detect
-                prob, center, size = TankCapture.Execute(item['image'], packetId)
+            prob, center, size = TankCapture.Execute(workData['image'])
 
-                # anyDrawn = True
-                if self.__isDisposed:
-                    break
-                responseObject = WideFieldPositionMessage(
-                    packetId,
-                    center[0],
-                    center[1],
-                    size[0],
-                    size[1])
+            # anyDrawn = True
+            if self.__isDisposed:
+                break
 
-                item['client'].send(responseObject.Serialize())
-                # print(f"[WideField] Sent object [{packetId}] | {responseObject.PositionX}:{responseObject.PositionY} | [{responseObject.SizeX}:{responseObject.SizeY}]")
+            responseObject = WideFieldPositionMessage(center, size)
+            if not workData['client'].fileno() == -1:
+                workData['client'].send(responseObject.Serialize())
+
+            print(round(1.0 / (time.time() - fixTime), 2))
 
         self.Locker.acquire()
         try:
-            self.BufferDictionary.clear()
-            self.WorkDictionary.clear()
+            self.Buffer.clear()
         finally:
             self.Locker.release()
 
@@ -69,15 +64,12 @@ class MotionDetection(Thread):
         print("Motion detection closed!")
 
     def OnMessageReceive(self, kwargs):
-        packetId = kwargs['message'].PacketId
-        image = JpgDecoder.Decode(kwargs['message'])
+        image = JpgDecoder.Decode(kwargs['message'].JpgImageData)
         # byteArray = img_to_array(JpgDecoder.Decode(kwargs['message']))
 
         self.Locker.acquire()
         try:
-            print(f"Received packetId: {packetId}")
-            self.BufferDictionary.update({packetId: {'client': kwargs['client'], 'image': image}})
-            # self.BufferDictionary.update({packetId: {'client': kwargs['client'], 'data': byteArray}})
+            self.Buffer.append({'client': kwargs['client'], 'image': image})
         finally:
             self.Locker.release()
 

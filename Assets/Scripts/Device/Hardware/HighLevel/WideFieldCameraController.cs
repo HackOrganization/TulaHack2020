@@ -1,7 +1,11 @@
-﻿using Device.Hardware.HighLevel.Utils;
+﻿using Core.GameEvents;
+using Core.MathConversion;
+using Device.Hardware.HighLevel.Utils;
 using Device.Hardware.LowLevel;
 using Device.Utils;
 using UnityEngine;
+using Utils.Extensions;
+using EventType = Core.GameEvents.EventType;
 
 namespace Device.Hardware.HighLevel
 {
@@ -37,19 +41,17 @@ namespace Device.Hardware.HighLevel
             if(CameraType != cameraType)
                 return;
 
-            var frameId = (ushort) args[1];
-            var lastStep = _currentPosition;
-            if (FramePositionMap.ContainsKey(frameId))
-                lastStep = FramePositionMap[frameId].x; //Шаг, на котором была передана картинка с идентификатором frameId
-            FramePositionMap.Remove(frameId);
-            
-            var position = (Vector2Int) args[2];
-            if(position == PassiveHuntingFlag)
-                return;
+            var position = (Vector2Int) args[1];
+            if (!((Vector2) position).IsNullPosition())
+            {
+                var positionOnImage = position.DelayedImageHorizontalPosition(CurrentPosition, CashedDevicePosition);
+                position = position.HorizontalPosition(CashedDevicePosition);
                 
-            //ToDo: transform lastStep + position to new orientation (in steps)
+                EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, positionOnImage, args[2]);
+            }
             
-            LastHandledPosition.SetUp(position);
+            //ToDo: uncomment to navigate
+            //LastHandledPosition.SetUp(position);
         }
     }
 }
