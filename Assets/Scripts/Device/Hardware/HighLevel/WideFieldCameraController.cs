@@ -1,52 +1,43 @@
-﻿using UnityEngine;
+﻿using Device.Hardware.HighLevel.Utils;
+using Device.Hardware.LowLevel;
+using Device.Utils;
+using UnityEngine;
 
 namespace Device.Hardware.HighLevel
 {
     /// <summary>
-    /// Контроллер управления железом широкоугольной камеры
+    /// Высокоуровневое управление устройством поворота широкопольной камеры
     /// </summary>
     public class WideFieldCameraController: CameraBaseController
     {
         /// <summary>
-        /// Текущая позиция устройства
+        /// Тип камеры
         /// </summary>
-        public override Vector2 CurrentPosition => new Vector2(_currentPosition, 0);
+        public override CameraTypes CameraType => CameraTypes.WideField;
 
         /// <summary>
-        /// По часовой стрелке
+        /// Текущая позиция устройства (в шагах)
         /// </summary>
-        private bool _isClockwise;
-        private float _currentPosition;
-        
+        public override Vector2Int CurrentPosition => new Vector2Int(_currentPosition, 0);
+
+        private int _currentPosition;
+
+        public override void Initialize(SerialPortController serialPortController)
+        {
+            LastHandledPosition = new WideFieldLastHandledPosition();
+            base.Initialize(serialPortController);
+        }
+
         /// <summary>
-        /// Получение команды движгаться в определнную координату 
+        /// Обновление координаты наведения 
         /// </summary>
         protected override void OnNewPositionCaptured(object[] args)
         {
-            var value = (Vector2) args[0];
-            if(value == PassiveHuntingFlag)
-                PassiveHunting();
-            else
-                ActiveHunting(value);
-        }
-
-        /// <summary>
-        /// Режим активного наведения 
-        /// </summary>
-        protected override void ActiveHunting(Vector2 value)
-        {
-            LastHandledPosition = new Vector2(value.x, 0);
-            //ToDo: rotate
-        }
-        
-        /// <summary>
-        /// Режим пасивной слежки
-        /// </summary>
-        private void PassiveHunting()
-        {
-            var sign = _isClockwise ? 1f : -1f;
-            //ToDo: Rotate -> _currentPosition
-            //ToDo: handle min/max position to change rotation
+            var cameraType = (CameraTypes) args[0];
+            if(CameraType != cameraType)
+                return;
+            
+            LastHandledPosition.SetUp((Vector2Int) args[1]);
         }
     }
 }

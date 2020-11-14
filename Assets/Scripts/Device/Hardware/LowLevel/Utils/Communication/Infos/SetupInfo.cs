@@ -15,7 +15,7 @@
         /// </summary>
         public readonly int Acceleration;
             
-        public SetupInfo(int speed = 0, int acceleration = 0)
+        public SetupInfo(int speed = CommunicationParams.DEFAULT_SPEED, int acceleration = CommunicationParams.DEFAULT_ACCELARATION)
         {
             Speed = speed;
             Acceleration = acceleration;

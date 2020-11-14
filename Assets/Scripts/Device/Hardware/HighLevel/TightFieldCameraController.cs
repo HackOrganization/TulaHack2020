@@ -1,38 +1,43 @@
-﻿using UnityEngine;
+﻿using Device.Hardware.HighLevel.Utils;
+using Device.Hardware.LowLevel;
+using Device.Utils;
+using UnityEngine;
 
 namespace Device.Hardware.HighLevel
 {
     /// <summary>
-    /// Контроллер управления железом узкопольной камеры
+    /// Высокоуровневое управление устройством поворота узкопольной камеры
     /// </summary>
     public class TightFieldCameraController: CameraBaseController
     {
         /// <summary>
-        /// Текущая позиция устройства
+        /// Тип камеры
         /// </summary>
-        public override Vector2 CurrentPosition => _currentPosition;
-        
-        private Vector2 _currentPosition;
+        public override CameraTypes CameraType => CameraTypes.TightField;
         
         /// <summary>
-        /// Получение команды движгаться в определнную координату 
+        /// Текущая позиция устройства (в шагах)
+        /// </summary>
+        public override Vector2Int CurrentPosition => _currentPosition;
+        
+        private Vector2Int _currentPosition;
+        
+        public override void Initialize(SerialPortController serialPortController)
+        {
+            LastHandledPosition = new TightFieldLastHandledPosition();
+            base.Initialize(serialPortController);
+        }
+        
+        /// <summary>
+        /// Обновление координаты наведения
         /// </summary>
         protected override void OnNewPositionCaptured(object[] args)
         {
-            var value = (Vector2) args[0];
-            if(value == PassiveHuntingFlag)
+            var cameraType = (CameraTypes) args[0];
+            if(CameraType != cameraType)
                 return;
-            
-            ActiveHunting(value);
-        }
 
-        /// <summary>
-        /// Режим активного наведения 
-        /// </summary>
-        protected override void ActiveHunting(Vector2 value)
-        {
-            LastHandledPosition = new Vector2(value.x, 0);
-            //ToDo: rotate
+            LastHandledPosition.SetUp((Vector2Int) args[1]);
         }
     }
 }

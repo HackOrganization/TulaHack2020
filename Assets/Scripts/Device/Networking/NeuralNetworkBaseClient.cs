@@ -58,7 +58,7 @@ namespace Device.Networking
         /// </summary>
         public bool IsDisposed { get; protected set; }
 
-        protected virtual void Dispose(bool disposing, bool sayGoodbye = true)
+        protected virtual void Dispose(bool disposing)
         {
             if (!IsDisposed)
             {
@@ -79,15 +79,6 @@ namespace Device.Networking
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        
-        /// <summary>
-        /// Методы вызова очистки данных класса без оповещения сервера 
-        /// </summary>
-        public void SafeDispose()
-        {
-            Dispose(true, false);
             GC.SuppressFinalize(this);
         }
         #endregion

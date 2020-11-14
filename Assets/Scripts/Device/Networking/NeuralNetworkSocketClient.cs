@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Net;
+using Core;
+using Device.Utils;
 using Networking.Client;
 using Networking.Message;
 using Networking.Message.Utils;
 using UnityEngine;
 using Utils.Extensions;
+using EventType = Core.EventType;
 
 namespace Device.Networking
 {
@@ -73,6 +76,7 @@ namespace Device.Networking
 
         private void OnWideFieldPositionCaught(WideFieldPositionMessage message)
         {
+            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, message.Position);
             Debug.Log($"[Client] WideField[{message.PacketId}]: take position \"{message.Position}\"");
         }
         

@@ -1,16 +1,11 @@
 ﻿using System.Collections;
 using System.Linq;
 using System.Net;
-using Core;
 using Core.OrderStart;
+using Device.Hardware.LowLevel;
 using Device.Utils;
-using Networking.Client;
-using Networking.Message;
-using Networking.Message.Utils;
 using UnityEngine;
 using Utils;
-using Utils.Extensions;
-using EventType = Core.EventType;
 using NetworkingParams = Networking.Utils.Params;
 
 namespace Device
@@ -25,6 +20,9 @@ namespace Device
         
         [Header("Контроллеры устройств")]
         [SerializeField] private DeviceController[] deviceControllers;
+        
+        [Header("Hardware info")] 
+        [SerializeField] private HardwareController hardwareController;
 
         /// <summary>
         /// Точки подключения устройств для обмена сообщениями
@@ -44,14 +42,21 @@ namespace Device
         private WaitUntil _untilAllReady;
         private WaitForSeconds _loopAwait;
         
+        /// <summary>
+        /// Функция последовательной инициализации
+        /// </summary>
         public void OnStart()
         {
-            _untilAllReady = new WaitUntil(()=> deviceControllers.All(d => d.IsReady));
+            _untilAllReady = new WaitUntil(() => 
+                deviceControllers.All(d => d.IsReady) 
+                && hardwareController.IsInitialized);
             _loopAwait = new WaitForSeconds(Params.CAPTURE_PER_SECOND);
             
             var deviceConnectionPoints = DeviceConnectionPoints;
             for (var i = 0; i < deviceControllers.Length; i++)
                 deviceControllers[i].Initialize(deviceConnectionPoints[i]);
+            
+            hardwareController.Initialize();
 
             if (autoRun)
                 Run();
@@ -78,13 +83,16 @@ namespace Device
         {
             yield return _untilAllReady;
             
-            //ToDo: КОСТЫЛЬ КОСТЫЛЕЙ
+            //КОСТЫЛЬ КОСТЫЛЕЙ
             yield return new WaitForSeconds(1);
 
             var counter = 0;
             while (!_isDisposed)
             {
-                yield return WideFieldDevice.OnSendImageRequest();
+                yield return new WaitForEndOfFrame();
+
+                var packetId = hardwareController.WideFieldCameraController.FixPosition();
+                WideFieldDevice.OnSendImageRequest(packetId);
                 yield return _loopAwait;
                 
                 //ToDo: поставлено в целях теста отправки одного изображения

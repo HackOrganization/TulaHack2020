@@ -1,19 +1,26 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Threading;
-using Device.Hardware.LowLevel.Utils;
 using Device.Hardware.LowLevel.Utils.Communication;
 using UnityAsyncHelper.Core;
 using UnityEngine;
 
 namespace Device.Hardware.LowLevel
 {
+    /// <summary>
+    /// Контроллер обмена данными через COM-порт
+    /// </summary>
     public class SerialPortController: IDisposable
     {
         /// <summary>
-        /// Событие обнаружения устройства
+        /// Событие обнаружения устройства (при получении ответа на HELLO-Respose)
         /// </summary>
         public event Action onDetected = () => { }; 
+        
+        /// <summary>
+        /// Открыт ли порт для работы с устройством
+        /// </summary>
+        public bool IsOpened { get; private set; }
         
         /// <summary>
         /// Имя порта
@@ -40,8 +47,13 @@ namespace Device.Hardware.LowLevel
         {
             _serialPort.Open();
             _readThread.Start();
+
+            IsOpened = true;
         }
 
+        /// <summary>
+        /// Отправка сообщения через порт (в основном потоке)
+        /// </summary>
         public void Send(string message)
         {
             _serialPort.WriteLine(message);
@@ -56,18 +68,26 @@ namespace Device.Hardware.LowLevel
             {
                 try
                 {
-                    var message = _serialPort.ReadLine(); 
-                    ThreadManager.ExecuteOnMainThread(()=> OnMessageRead(message));
+                    var message = _serialPort.ReadLine();
+                    ThreadManager.ExecuteOnMainThread(() => OnMessageRead(message));
+                }
+                catch (TimeoutException toEx)
+                {
+
+                }
+                catch (ThreadAbortException thaEx)
+                {
+                    Debug.Log($"SerialPort ReadThread {Thread.CurrentThread.ManagedThreadId} aborted");
                 }
                 catch (Exception ex)
                 {
-                    Debug.Log(ex);
+                    Debug.LogError(ex);
                 }
             }
         }
 
         /// <summary>
-        /// Обрабатывает прочитанное сообщение в основном потоке
+        /// Обрабатывает прочитанное в основном потоке сообщение (обработка происходит в основном потоке) 
         /// </summary>
         private void OnMessageRead(string message)
         {
@@ -91,11 +111,12 @@ namespace Device.Hardware.LowLevel
             {
                 if (disposing)
                 {
+                    IsOpened = false;
                     onDetected = null;
                     
                     _stringComparer = null;
-                    _serialPort.Close();
                     _readThread.Abort();
+                    _serialPort.Close();
                     _serialPort.Dispose();
                 }
                 _isDisposed = true;

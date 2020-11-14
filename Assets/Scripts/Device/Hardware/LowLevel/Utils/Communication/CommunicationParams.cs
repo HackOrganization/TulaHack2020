@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Device.Hardware.LowLevel.Utils.Communication.Infos;
+using UnityEngine;
 
 namespace Device.Hardware.LowLevel.Utils.Communication
 {
@@ -9,17 +10,41 @@ namespace Device.Hardware.LowLevel.Utils.Communication
     /// </summary>
     public static class CommunicationParams
     {
+        /// <summary>
+        /// Количество управляемых устройств
+        /// </summary>
         public const int DEVICES_COUNT = 3;
+        
+        /// <summary>
+        /// Время поворота полного круга (в секундах)
+        /// </summary>
+        public const int FULL_LOOP_TIME = 4;
+
+        /// <summary>
+        /// Количество шагов за полный круг
+        /// </summary>
+        public const int FULL_LOOP_STEPS = 1630;
         
         public const string HELLO_REQUEST = "TARAFIMOV";
         public const string HELLO_RESPONSE = "PSINA";
 
-        public const string SEPARATOR = ",";
+        public const char SEPARATOR = ',';
         private const char END_LINE_FLAG = ';';
 
-        private const char SETUP_FLAG = 's';
-        private const char MOVE_FLAG = 's';
-        private const char CALIBRATION_FLAG = 'c';
+        private const char SETUP_FLAG = 'S';
+        private const char MOVE_FLAG = 'M';
+        private const char POSITION_FLAG = 'P';
+        private const char CALIBRATION_FLAG = 'C';
+        private const char LASER_FLAG = 'L';
+        
+
+        public const int DEFAULT_SPEED = 3500;
+        public const int DEFAULT_ACCELARATION = 0;
+
+        /// <summary>
+        /// Возвращает команду установки параметров с базовыми настройками 
+        /// </summary>
+        public static string GetDefaultSetupMessage() => GetSetupMessage();
 
         /// <summary>
         /// Возвращает команду по установке начальных параметров
@@ -33,6 +58,15 @@ namespace Device.Hardware.LowLevel.Utils.Communication
             var command = $"{SETUP_FLAG}";
             command += CommandConcat(collectionInfos.Take(DEVICES_COUNT).ToArray());
             return command;
+        }
+        
+        /// <summary>
+        /// Возвращает строку установки состояния лазера 
+        /// </summary>
+        public static string GetLaserMessage(bool enable)
+        {
+            var enableChar = enable ? '1' : '0';
+            return $"{LASER_FLAG}{enableChar}{END_LINE_FLAG}";
         }
 
         /// <summary>
@@ -50,6 +84,24 @@ namespace Device.Hardware.LowLevel.Utils.Communication
         }
 
         /// <summary>
+        /// Возвращает строку запроса текущего положения
+        /// </summary>
+        public static string GetPositionRequestMessage() => $"{POSITION_FLAG}{END_LINE_FLAG}";
+
+        /// <summary>
+        /// Возвращает переведенный в Vector2Int массив текущих позиций камер 
+        /// </summary>
+        public static Vector2Int[] ParsePositionResponse(string message)
+        {
+            var values = message.Split(SEPARATOR).Select(int.Parse).ToArray();
+            return new []
+            {
+                new Vector2Int(values[0], 0),
+                new Vector2Int(values[1], values[2])
+            };
+        } 
+        
+        /// <summary>
         /// Возвращает команду по калибровке
         /// </summary>
         public static string GetCalibrationMessage() => $"{CALIBRATION_FLAG}{END_LINE_FLAG}";
@@ -60,7 +112,7 @@ namespace Device.Hardware.LowLevel.Utils.Communication
         /// </summary>
         private static string CommandConcat(IEnumerable<ICommandInfo> commandInfos)
         {
-            var result = string.Join(SEPARATOR, commandInfos.Select(c => c.ToString()));
+            var result = string.Join($"{SEPARATOR}", commandInfos.Select(c => c.ToString()));
             return $"{result}{END_LINE_FLAG}";
         }
     }

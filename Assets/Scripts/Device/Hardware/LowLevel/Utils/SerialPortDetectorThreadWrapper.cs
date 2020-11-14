@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO.Ports;
 using System.Threading;
-using Core;
 using Device.Hardware.LowLevel.Utils.Communication;
 using UnityAsyncHelper.Wrappers;
 
@@ -12,6 +10,11 @@ namespace Device.Hardware.LowLevel.Utils
     /// </summary>
     public class SerialPortDetectorThreadWrapper: ThreadWrapperBase, IDisposable
     {
+        /// <summary>
+        /// Событие заверешения работы по идентификации устройства
+        /// </summary>
+        public event EventHandler<SerialPortDetectorEventArgs> onCompleted = (sender, args) => { };
+        
         private const int AwaitResponseTime = 15;
 
         /// <summary>
@@ -59,13 +62,7 @@ namespace Device.Hardware.LowLevel.Utils
         /// </summary>
         protected override void OnCompleted()
         {
-            if (RequestCanceled && !_result)
-            {
-                EventManager.RaiseEvent(EventType.HardwareSerialPortDetectionCanceled);
-                return;
-            }
-            
-            EventManager.RaiseEvent(EventType.HardwareSerialPortDetected, _result, _serialPortController.PortName);
+            onCompleted(this, new SerialPortDetectorEventArgs(_result, _serialPortController.PortName));
         }
 
         /// <summary>
@@ -98,6 +95,7 @@ namespace Device.Hardware.LowLevel.Utils
             {
                 if (disposing)
                 {
+                    onCompleted = null;
                     _serialPortController.onDetected -= Detect;
                     _serialPortController.Dispose();
                 }

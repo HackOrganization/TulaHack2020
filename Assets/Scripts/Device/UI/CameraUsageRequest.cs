@@ -28,7 +28,7 @@ namespace Device.UI
             yield return DeviceRequest(FindWebCams, UserAuthorization.WebCam);
             //yield return DeviceRequest(FindMicrophones, UserAuthorization.Microphone);//Микрофоны не нужны, но вот на всякий пожарный
             
-            EventManager.RaiseEvent(EventType.DeviceAuthorized);
+            EventManager.RaiseEvent(EventType.CameraAuthorized);
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Device.UI
             var deviceCount = enumerateAvailableAction.Invoke();
             if (deviceCount == 0)
             {
-                EventManager.RaiseEvent(EventType.DeviceLocked, deviceType);
+                EventManager.RaiseEvent(EventType.CameraLocked, deviceType);
                 yield return null;
             }
             else

@@ -8,17 +8,13 @@ namespace Core
     /// </summary>
     public enum EventType 
     {
-        DeviceAuthorized,
-        DeviceLocked,
+        CameraAuthorized,
+        CameraLocked,
         
         ClientConnected, //IsClientSide, LocalEndPoint, RemoteEndPoint
         ReceivedMessage, //MessageType, IMessage, AsynchronousClient
         
-        HardwareSerialPortDetected,//Result, PortName
-        HardwareSerialPortDetectionCanceled,
-        
-        DeviceSendImage, //CameraTypes
-        DeviceGoPosition, //Vector2
+        DeviceGoPosition, //CameraTypes, Vector2Int
     }
 
     /// <summary>

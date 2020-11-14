@@ -46,13 +46,13 @@ namespace Device.Video
 
         public void Initialize(CameraTypes cameraType)
         {
-            EventManager.AddHandler(EventType.DeviceAuthorized, OnCameraAuthorized);
+            EventManager.AddHandler(EventType.CameraAuthorized, OnCameraAuthorized);
             _cameraType = cameraType;
         }
 
         private void OnDestroy()
         {
-            EventManager.RemoveHandler(EventType.DeviceAuthorized, OnCameraAuthorized);
+            EventManager.RemoveHandler(EventType.CameraAuthorized, OnCameraAuthorized);
         }
 
         /// <summary>
@@ -131,9 +131,8 @@ namespace Device.Video
         /// <summary>
         /// Захватывает изображение с камеры для дальнейшей передачи
         /// </summary>
-        public IEnumerator Capture()
+        public void Capture()
         {
-            yield return new WaitForEndOfFrame();
             SendFrame.SetPixels32(_webCamTexture.GetPixels32());
         }
     }

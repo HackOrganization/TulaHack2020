@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
-using Core;
 using Device.Hardware.HighLevel;
 using Device.Hardware.LowLevel.Utils;
 using Device.Hardware.LowLevel.Utils.Communication;
-using Device.Utils;
 using UnityEngine;
-using EventType = Core.EventType;
 
 namespace Device.Hardware.LowLevel
 {
@@ -18,24 +16,52 @@ namespace Device.Hardware.LowLevel
     public class HardwareController: MonoBehaviour
     {
         [Header("Camera controllers")] 
-        [SerializeField] private CameraBaseController wideFieldController;
-        [SerializeField] private CameraBaseController tightFieldController;
+        [SerializeField] protected CameraBaseController wideFieldController;
+        [SerializeField] protected CameraBaseController tightFieldController;
+
+        /// <summary>
+        /// Порт определен, устройства откалиброваны. 
+        /// </summary>
+        public bool IsInitialized => CameraBaseControllers.All(c => c.IsInitialized);
+
+        /// <summary>
+        /// Перечисление наводящихся камер
+        /// </summary>
+        private IEnumerable<CameraBaseController> CameraBaseControllers => new[]
+        {
+            wideFieldController, tightFieldController
+        };
         
         /// <summary>
-        /// Порт определен, устройства откалиброваны
+        /// Широкопольная наводящаяся камера
         /// </summary>
-        public bool IsInitialized { get; private set; }
-
         public WideFieldCameraController WideFieldCameraController => (WideFieldCameraController)wideFieldController;
-        public TightFieldCameraController TightFieldCameraController => (TightFieldCameraController)wideFieldController;
+        
+        /// <summary>
+        /// Узкопольная наводящаяся камера
+        /// </summary>
+        public TightFieldCameraController TightFieldCameraController => (TightFieldCameraController)tightFieldController;
 
+        private bool _isDisabled;
         private int _wrappersInvokedCount;
-        private readonly List<SerialPortDetectorThreadWrapper> _threadWrappers = new List<SerialPortDetectorThreadWrapper>();
         private SerialPortController _serialPortController;
+        private readonly List<SerialPortDetectorThreadWrapper> _threadWrappers = new List<SerialPortDetectorThreadWrapper>();
+
+        private WaitUntil _untilPortOpened;
+        private WaitForSeconds _loopWait;
+        private WaitForSeconds _calibrateWait;
+        
+        #region INITIALIZATION
 
         public void Initialize()
         {
+            _untilPortOpened = new WaitUntil(() => _serialPortController != null && _serialPortController.IsOpened);
+            _loopWait = new WaitForSeconds(1f / SerialPortParams.TIMEOUT);
+            _calibrateWait = new WaitForSeconds(1f / CommunicationParams.FULL_LOOP_TIME);
+            
             StartSearchingDevice();
+
+            StartCoroutine(CorSendPosition());
         }
 
         /// <summary>
@@ -43,40 +69,99 @@ namespace Device.Hardware.LowLevel
         /// </summary>
         private void StartSearchingDevice()
         {
-            EventManager.AddHandler(EventType.HardwareSerialPortDetected, OnPortDetected);
-            
             foreach (var portName in SerialPort.GetPortNames())
             {
                 var wrapper = new SerialPortDetectorThreadWrapper(portName);
+                wrapper.onCompleted += OnDetectionCompleted;
                 _threadWrappers.Add(wrapper);
                 wrapper.Start();
             }
         }
 
         /// <summary>
-        /// Перехватывает событие HardwareSerialPortDetected
-        /// <param name="args">[0] - Result, [1] - PortName</param>>
+        /// Перехватывает событие SerialPortDetectorThreadWrapper.onCompleted
         /// </summary>
-        private void OnPortDetected(object[] args)
+        private void OnDetectionCompleted(object sender, SerialPortDetectorEventArgs args)
         {
-            if(_wrappersInvokedCount++ > CommunicationParams.DEVICES_COUNT)
-                return;
-            
-            var result = (bool) args[0];
-            var portName = (string) args[1];
-
-            if (result)
+            if (args.Result)
             {
-                _serialPortController = SerialPortParams.NewSerialPort(portName);
-                foreach (var wrapper in _threadWrappers.Where(wr => wr.PortName != portName))
+                Debug.Log($"Found! {args.PortName}");
+                
+                _serialPortController = SerialPortParams.NewSerialPort(args.PortName);
+                foreach (var wrapper in _threadWrappers.Where(wr => wr.PortName != args.PortName))
                     wrapper.CancelRequest();
 
-                IsInitialized = true;
+                foreach (var cameraBaseController in CameraBaseControllers)
+                    cameraBaseController.Initialize(_serialPortController);
                 return;
             }
+
+            ((SerialPortDetectorThreadWrapper) sender).onCompleted -= OnDetectionCompleted;
+
+            if (++_wrappersInvokedCount == _threadWrappers.Count)
+            {
+                foreach (var wrapper in _threadWrappers)
+                    wrapper.Dispose();
+                
+                _threadWrappers.Clear();
+
+                _serialPortController?.Start();
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Отправляет с периодичностью
+        /// </summary>
+        private IEnumerator CorSendPosition()
+        {
+            yield return _untilPortOpened;
+
+            Debug.Log("Start calibration....");
+            _serialPortController.Send(CommunicationParams.GetDefaultSetupMessage());
+            yield return _calibrateWait;
             
-            //ToDo: Invoke wrappers Dispose
-            //ToDo: Handle HardwareSerialPortDetectionCanceled event
+            //ToDo: не реализован режим пассивного слежения
+            while (!_isDisabled)
+            {
+                Debug.Log("Calibrated! Awaiting inputs....");
+                
+                var success = false;
+                var enumMoveInfos = CameraBaseControllers
+                    .Select(c => c.LastHandledPosition.ToMoveInfos(ref success));
+
+                //Если какая-то из координат была обновлена, тогда отправляем команду наведения
+                if (success)
+                {
+                    var moveInfos = enumMoveInfos
+                        .Aggregate((last, next) => last.Concat(next))
+                        .ToArray();
+
+                    var moveMessage = CommunicationParams.GetMoveMessage(moveInfos);
+                    Debug.Log($"Input detected. Sending command \"{moveMessage}\"");
+                    _serialPortController.Send(moveMessage);
+                }
+                yield return _loopWait;
+            }
+        }
+
+        private void OnDisable()
+        {
+            _isDisabled = true;
+            StopAllCoroutines();
+            
+            foreach (var cameraController in CameraBaseControllers)
+                cameraController.Dispose();
+
+            foreach (var wrapper in _threadWrappers)
+            {
+                wrapper.onCompleted -= OnDetectionCompleted;
+                wrapper.CancelRequest();
+                wrapper.Dispose();
+            }
+            _threadWrappers.Clear();
+            
+            _serialPortController?.Dispose();
         }
     }
 }
