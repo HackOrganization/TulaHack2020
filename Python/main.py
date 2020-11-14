@@ -2,15 +2,28 @@ import Socket.Utils.Params as Params
 
 from Socket.DeviceServer import SocketListener
 
-if __name__ == '__main__':
-    print("Start working")
-    motionDetection = SocketListener(Params.WIDE_FIELD_ADDRESS, Params.WIDE_FIELD_PORT, 1)
-    print("Continue main...")
+from Core.EventManager import EventManager
+
+
+def Execute():
+    EventManager.Initialize()
+
+    motionDetectionListener = SocketListener(Params.WIDE_FIELD_ADDRESS, Params.WIDE_FIELD_PORT, 1)
 
     while True:
         inputCommand = input()
         if inputCommand == "exit_quit":
-            motionDetection.Dispose()
+            motionDetectionListener.Dispose()
             break
 
-    motionDetection.AcceptThread.join()
+    motionDetectionListener.AcceptThread.join()
+
+
+def TestFunction(kwargs):
+    print("Without context:")
+    for key in kwargs:
+        print(f"{key} : {kwargs[key]}")
+
+
+if __name__ == '__main__':
+    Execute()

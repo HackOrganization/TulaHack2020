@@ -1,5 +1,7 @@
 import socket as SocketLib
 
+from Core.EventManager import EventManager
+from Core.Utils.EventType import EventType
 from Socket.Messages.Utils.MessageTypes import MessageTypes
 from Socket.Messages.WideFieldPositionMessage import WideFieldPositionMessage
 
@@ -10,8 +12,9 @@ def SendResponse(client: SocketLib.socket, messageType: MessageTypes, message):
         print("Close connection")
         return False
     elif messageType == MessageTypes.WideFieldImage:
-        # ToDo: save Id
-        # ToDo: send to motionDetection
+        # Send message to MotionDetection controller
+        EventManager.RaiseEvent(EventType.WideFieldImageGotten, message)
+
         responseObject = WideFieldPositionMessage(message.PacketId, message)
         print(f"[WideField] Bytes sent: {client.send(responseObject.Serialize())}")
         print(f"[WideField] Sent coordinates {responseObject.PositionX}:{responseObject.PositionY}")
