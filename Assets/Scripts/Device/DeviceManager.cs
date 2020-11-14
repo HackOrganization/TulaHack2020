@@ -6,6 +6,7 @@ using Core.OrderStart;
 using Device.Hardware.LowLevel;
 using Device.Utils;
 using UnityEngine;
+using UnityEngine.UI;
 using Utils;
 using EventType = Core.EventType;
 using NetworkingParams = Networking.Utils.Params;
@@ -25,6 +26,10 @@ namespace Device
         
         [Header("Hardware info")] 
         [SerializeField] private HardwareController hardwareController;
+
+        [Header("Debug")] 
+        [SerializeField] private Text fpsText;
+        [SerializeField] private Text tickText;
 
         /// <summary>
         /// Точки подключения устройств для обмена сообщениями
@@ -49,6 +54,7 @@ namespace Device
         /// </summary>
         public void OnStart()
         {
+            Application.targetFrameRate = 200;
             EventManager.AddHandler(EventType.EndWork, OnEndWork);
             
             _untilAllReady = new WaitUntil(ComponentsAreReady);
@@ -115,10 +121,18 @@ namespace Device
                 yield return _loopAwait;
                 
                 //ToDo: поставлено в целях теста отправки одного изображения
-                if(++counter == int.MaxValue || !ComponentsAreReady())
+                Debug_PrintInfo(in counter);
+                
+                if(!ComponentsAreReady())
                     //ToDo: dispose all controllers (Neural, AsyncClient, Hardware...)
                     yield break;
             }
-        }        
+        }
+
+        private void Debug_PrintInfo(in int counter)
+        {
+            fpsText.text = $"FPS:\n{1f / Time.deltaTime :###.##}";
+            tickText.text = $"TICK:\n{counter}";
+        }
     }
 }

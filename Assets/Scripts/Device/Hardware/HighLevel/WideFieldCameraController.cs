@@ -44,9 +44,10 @@ namespace Device.Hardware.HighLevel
             FramePositionMap.Remove(frameId);
             
             var position = (Vector2Int) args[2];
-            if(position != PassiveHuntingFlag)
-                //ToDo: transform lastStep + position to new orientation (in steps)
+            if(position == PassiveHuntingFlag)
+                return;
                 
+            //ToDo: transform lastStep + position to new orientation (in steps)
             LastHandledPosition.SetUp(position);
         }
     }

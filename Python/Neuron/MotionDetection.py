@@ -46,8 +46,8 @@ class MotionDetection(Thread):
                     packetId,
                     random.randint(0, 640),
                     random.randint(0, 480),
-                    random.randint(0, 320),
-                    random.randint(0, 240))
+                    random.randint(100, 120),
+                    random.randint(100, 120))
 
                 item['client'].send(responseObject.Serialize())
                 print(f"[WideField] Sent object [{packetId}] | {responseObject.PositionX}:{responseObject.PositionY} | [{responseObject.SizeX}:{responseObject.SizeY}]")

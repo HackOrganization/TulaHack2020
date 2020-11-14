@@ -13,7 +13,7 @@ def Execute():
 
     while True:
         inputCommand = input()
-        if inputCommand == "exit_quit":
+        if inputCommand == "exit":
             motionDetectionListener.Dispose()
             motionDetectionWorker.Dispose()
             break
