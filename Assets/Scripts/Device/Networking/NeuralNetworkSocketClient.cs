@@ -82,8 +82,9 @@ namespace Device.Networking
 
         private void OnWideFieldPositionCaught(WideFieldPositionMessage message)
         {
-            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, message.Position);
-            Debug.Log($"[Client] WideField[{message.PacketId}]: take position \"{message.Position}\"");
+            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, message.PacketId, message.Position);
+            EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, message.Position, message.Size);
+            Debug.Log($"[Client] WideField[{message.PacketId}]: take position \"{message.Position}\"; capture size \"{message.Size}\"");
         }
         
         #endregion

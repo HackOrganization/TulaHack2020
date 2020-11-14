@@ -10,11 +10,12 @@ namespace Core
     {
         CameraAuthorized,
         CameraLocked,
+        CameraDrawObject,//CameraTypes, Position[Vector2Int], Size[Vector2Int], 
         
         ClientConnected, //IsClientSide, LocalEndPoint, RemoteEndPoint
         ReceivedMessage, //MessageType, IMessage, AsynchronousClient
         
-        DeviceGoPosition, //CameraTypes, Vector2Int
+        DeviceGoPosition, //CameraTypes, PacketId[ushort], Position[Vector2Int]
     }
 
     /// <summary>

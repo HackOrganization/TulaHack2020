@@ -37,15 +37,20 @@ class MotionDetection(Thread):
                 self.Locker.release()
 
             keys = list(self.WorkDictionary.keys())
-            for key in keys:
-                item = self.WorkDictionary.pop(key)
+            for packetId in keys:
+                item = self.WorkDictionary.pop(packetId)
                 # ToDo: detect
                 if self.__isDisposed:
                     break
-                responseObject = WideFieldPositionMessage(key, random.randint(0, 640), random.randint(0, 480))
+                responseObject = WideFieldPositionMessage(
+                    packetId,
+                    random.randint(0, 640),
+                    random.randint(0, 480),
+                    random.randint(0, 320),
+                    random.randint(0, 240),)
 
                 print(f"[WideField] Bytes sent: {item['client'].send(responseObject.Serialize())}")
-                print(f"[WideField] Sent coordinates {responseObject.PositionX}:{responseObject.PositionY}")
+                print(f"[WideField] Sent object {responseObject.PositionX}:{responseObject.PositionY} [{responseObject.SizeX}:{responseObject.SizeY}]")
 
         self.Locker.acquire()
         try:

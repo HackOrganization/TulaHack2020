@@ -29,17 +29,6 @@ namespace Device.Networking
         {
             EventManager.AddHandler(EventType.ClientConnected, OnConnected);
             EventManager.AddHandler(EventType.ReceivedMessage, OnReceived);
-
-            //Client = AsynchronousClient.Connect(endPoint);
-            // object[] SetUpConnection()
-            // {
-            //     return new object[] {AsynchronousClient.Connect(endPoint)};
-            // }
-            //
-            // void SetUpConnectionCallback(object[] args)
-            // {
-            //     Client = (AsynchronousClient) args[0];
-            // }
             
             ThreadManager.AsyncExecute(() => Client = AsynchronousClient.Connect(endPoint), null);
             Debug.Log("Connection requested");

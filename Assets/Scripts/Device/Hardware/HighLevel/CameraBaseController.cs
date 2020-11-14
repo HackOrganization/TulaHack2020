@@ -41,7 +41,7 @@ namespace Device.Hardware.HighLevel
         public ILastHandledPosition LastHandledPosition { get; protected set; }
 
         protected SerialPortController SerialPortController;
-        public readonly Dictionary<ushort, Vector2Int> FramePositionMap = new Dictionary<ushort, Vector2Int>();
+        protected readonly Dictionary<ushort, Vector2Int> FramePositionMap = new Dictionary<ushort, Vector2Int>();
 
         public virtual void Initialize(SerialPortController serialPortController)
         {
