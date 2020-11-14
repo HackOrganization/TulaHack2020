@@ -23,11 +23,13 @@ namespace Device.Hardware.LowLevel.Utils.Communication
         /// <summary>
         /// Количество шагов за полный круг
         /// </summary>
-        public const int FULL_LOOP_STEPS = 1630;
+        public const int FULL_LOOP_STEPS = -900;
         
-        public const string HELLO_REQUEST = "TARAFIMOV";
+        public const string HELLO_REQUEST = "T;";
         public const string HELLO_RESPONSE = "PSINA";
 
+        public const string CALIBRATION_RESPONSE = "Calibration done";
+        
         public const char SEPARATOR = ',';
         private const char END_LINE_FLAG = ';';
 

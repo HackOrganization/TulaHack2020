@@ -5,6 +5,7 @@ using System.Linq;
 using Device.Hardware.HighLevel;
 using Device.Hardware.LowLevel.Utils;
 using Device.Hardware.LowLevel.Utils.Communication;
+using Device.Hardware.LowLevel.Utils.Communication.Infos;
 using UnityEngine;
 
 namespace Device.Hardware.LowLevel
@@ -43,13 +44,13 @@ namespace Device.Hardware.LowLevel
         public TightFieldCameraController TightFieldCameraController => (TightFieldCameraController)tightFieldController;
 
         private bool _isDisabled;
+        private bool _calibrateDone;
         private int _wrappersInvokedCount;
         private SerialPortController _serialPortController;
         private readonly List<SerialPortDetectorThreadWrapper> _threadWrappers = new List<SerialPortDetectorThreadWrapper>();
 
         private WaitUntil _untilPortOpened;
         private WaitForSeconds _loopWait;
-        private WaitForSeconds _calibrateWait;
         
         #region INITIALIZATION
 
@@ -57,7 +58,6 @@ namespace Device.Hardware.LowLevel
         {
             _untilPortOpened = new WaitUntil(() => _serialPortController != null && _serialPortController.IsOpened);
             _loopWait = new WaitForSeconds(1f / SerialPortParams.TIMEOUT);
-            _calibrateWait = new WaitForSeconds(1f / CommunicationParams.FULL_LOOP_TIME);
             
             StartSearchingDevice();
 
@@ -88,12 +88,12 @@ namespace Device.Hardware.LowLevel
                 Debug.Log($"Found! {args.PortName}");
                 
                 _serialPortController = SerialPortParams.NewSerialPort(args.PortName);
+                _serialPortController.onMessageReceived += OnMessageReceived;
                 foreach (var wrapper in _threadWrappers.Where(wr => wr.PortName != args.PortName))
                     wrapper.CancelRequest();
 
                 foreach (var cameraBaseController in CameraBaseControllers)
                     cameraBaseController.Initialize(_serialPortController);
-                return;
             }
 
             ((SerialPortDetectorThreadWrapper) sender).onCompleted -= OnDetectionCompleted;
@@ -115,33 +115,47 @@ namespace Device.Hardware.LowLevel
         /// </summary>
         private IEnumerator CorSendPosition()
         {
-            yield return _untilPortOpened;
+            yield return _untilPortOpened;//new WaitUntil(() => _serialPortController != null && _serialPortController.IsOpened);
 
             Debug.Log("Start calibration....");
-            _serialPortController.Send(CommunicationParams.GetDefaultSetupMessage());
-            yield return _calibrateWait;
+            //_serialPortController.Send(CommunicationParams.GetDefaultSetupMessage());
+            _serialPortController.Send(CommunicationParams.GetCalibrationMessage());
+            yield return new WaitUntil(()=> _calibrateDone);
             
             //ToDo: не реализован режим пассивного слежения
             while (!_isDisabled)
             {
-                Debug.Log("Calibrated! Awaiting inputs....");
-                
                 var success = false;
-                var enumMoveInfos = CameraBaseControllers
-                    .Select(c => c.LastHandledPosition.ToMoveInfos(ref success));
-
+                var moveInfosArray = new MoveInfo[CommunicationParams.DEVICES_COUNT];
+                var index = 0;
+                foreach (var controller in CameraBaseControllers)
+                {
+                    var enumMoveInfos = controller.LastHandledPosition.ToMoveInfos(ref success);
+                    foreach (var mi in enumMoveInfos)
+                        moveInfosArray[index++] = mi;
+                }
+                
                 //Если какая-то из координат была обновлена, тогда отправляем команду наведения
                 if (success)
                 {
-                    var moveInfos = enumMoveInfos
-                        .Aggregate((last, next) => last.Concat(next))
-                        .ToArray();
-
-                    var moveMessage = CommunicationParams.GetMoveMessage(moveInfos);
-                    Debug.Log($"Input detected. Sending command \"{moveMessage}\"");
+                    var moveMessage = CommunicationParams.GetMoveMessage(moveInfosArray);
+                    //Debug.Log($"Input detected. Sending command \"{moveMessage}\"");
                     _serialPortController.Send(moveMessage);
                 }
                 yield return _loopWait;
+            }
+        }
+
+        /// <summary>
+        /// Обработка полученного сообщения 
+        /// </summary>
+        private void OnMessageReceived(string message)
+        {
+            switch (message)
+            {
+                case CommunicationParams.CALIBRATION_RESPONSE:
+                    _calibrateDone = true;
+                    break;
             }
         }
 

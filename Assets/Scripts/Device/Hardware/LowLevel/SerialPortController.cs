@@ -15,7 +15,12 @@ namespace Device.Hardware.LowLevel
         /// <summary>
         /// Событие обнаружения устройства (при получении ответа на HELLO-Respose)
         /// </summary>
-        public event Action onDetected = () => { }; 
+        public event Action onDetected = () => { };
+
+        /// <summary>
+        /// Событие получения сообщения
+        /// </summary>
+        public event Action<string> onMessageReceived = value => { };
         
         /// <summary>
         /// Открыт ли порт для работы с устройством
@@ -91,11 +96,14 @@ namespace Device.Hardware.LowLevel
         /// </summary>
         private void OnMessageRead(string message)
         {
+            Debug.Log($"Received from UART:{message}");
             if (_stringComparer.Equals(CommunicationParams.HELLO_RESPONSE, message))
             {
                 onDetected();
                 return;
             }
+
+            onMessageReceived(message);
         }
         
         #region DISPOSE
@@ -113,6 +121,7 @@ namespace Device.Hardware.LowLevel
                 {
                     IsOpened = false;
                     onDetected = null;
+                    onMessageReceived = null;
                     
                     _stringComparer = null;
                     _readThread.Abort();

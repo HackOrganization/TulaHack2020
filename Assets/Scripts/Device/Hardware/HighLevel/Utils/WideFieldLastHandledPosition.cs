@@ -32,6 +32,11 @@ namespace Device.Hardware.HighLevel.Utils
         {
             success |= _updated;
             _updated = false;
+
+            if (success)
+            {
+                Debug.Log("Should Send!");
+            }
             
             return new[] { new MoveInfo(Position) };
         }

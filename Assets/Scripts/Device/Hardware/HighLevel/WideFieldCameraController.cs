@@ -36,7 +36,7 @@ namespace Device.Hardware.HighLevel
             var cameraType = (CameraTypes) args[0];
             if(CameraType != cameraType)
                 return;
-            
+
             LastHandledPosition.SetUp((Vector2Int) args[1]);
         }
     }

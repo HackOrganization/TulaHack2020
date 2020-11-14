@@ -21,7 +21,10 @@ namespace Device.Hardware.HighLevel.Utils
         /// </summary>
         public void SetUp(Vector2Int newValue)
         {
-            Position = newValue;
+            Position = new Vector2Int(
+                newValue.x == 0 ? Position.x : newValue.x,
+                newValue.y == 0 ? Position.y : newValue.y);
+            
             _updated = true;
         }
 
