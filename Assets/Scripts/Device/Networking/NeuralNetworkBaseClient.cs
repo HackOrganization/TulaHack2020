@@ -3,6 +3,7 @@ using System.Net;
 using Core;
 using Networking.Client;
 using Networking.Message;
+using UnityAsyncHelper.Core;
 using UnityEngine;
 using EventType = Core.EventType;
 
@@ -28,8 +29,19 @@ namespace Device.Networking
         {
             EventManager.AddHandler(EventType.ClientConnected, OnConnected);
             EventManager.AddHandler(EventType.ReceivedMessage, OnReceived);
+
+            //Client = AsynchronousClient.Connect(endPoint);
+            // object[] SetUpConnection()
+            // {
+            //     return new object[] {AsynchronousClient.Connect(endPoint)};
+            // }
+            //
+            // void SetUpConnectionCallback(object[] args)
+            // {
+            //     Client = (AsynchronousClient) args[0];
+            // }
             
-            Client = AsynchronousClient.Connect(endPoint);
+            ThreadManager.AsyncExecute(() => Client = AsynchronousClient.Connect(endPoint), null);
             Debug.Log("Connection requested");
         }
 

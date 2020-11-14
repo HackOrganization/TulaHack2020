@@ -6,6 +6,7 @@ using System.Threading;
 using Core;
 using Networking.Message;
 using Networking.Message.Utils;
+using Networking.Utils;
 using UnityAsyncHelper.Core;
 using UnityEngine;
 using Utils.Extensions;
@@ -48,7 +49,9 @@ namespace Networking.Client
             try
             {
                 var newClient = new AsynchronousClient(remoteEndPoint);
-                newClient.Socket.BeginConnect(remoteEndPoint, ConnectCallback, newClient);
+                
+                var connectionObject = new ClientConnectionObject(newClient, remoteEndPoint);
+                newClient.Socket.BeginConnect(remoteEndPoint, ConnectCallback, connectionObject);
                 newClient._connectDone.WaitOne();
 
                 return newClient;
@@ -65,15 +68,22 @@ namespace Networking.Client
         /// </summary>
         private static void ConnectCallback(IAsyncResult ar)
         {
+            var connectionObject = (ClientConnectionObject) ar.AsyncState;
+            var client = connectionObject.Client;
             try
             {
-                var client = (AsynchronousClient) ar.AsyncState;
                 client.Socket.EndConnect(ar);
 
                 ThreadManager.ExecuteOnMainThread(
-                    () => EventManager.RaiseEvent(EventType.ClientConnected, 
+                    () => EventManager.RaiseEvent(EventType.ClientConnected,
                         client.IsClientSide, client.Socket.LocalEndPoint, client.Socket.RemoteEndPoint));
                 client._connectDone.Set();
+            }
+            catch (SocketException se)
+            {
+                Debug.Log("Next attempt....");
+                Thread.Sleep(Params.RETRY_SETTING_CONNECTION_TIMEOUT);
+                client.Socket.BeginConnect(connectionObject.RemoteEndPoint, ConnectCallback, connectionObject);
             }
             catch (Exception e)
             {
