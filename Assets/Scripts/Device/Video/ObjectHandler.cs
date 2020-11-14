@@ -64,16 +64,14 @@ namespace Device.Video
                 return;
 
             handlerRectTransform.SetHandlerPosition(args[1], in _containerResolutionRatio);
-            
-            var size = args[2].AutoSizedVector(in _containerResolutionRatio);
-            handlerRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x); 
-            handlerRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y); 
+            handlerRectTransform.SetHandlerSize(args[2], in _containerResolutionRatio);
         }
     }
     
     public static class ObjectHandlerExtensions
     {
         private static readonly float[] NullVector = {0f, 0f};
+        private static readonly int[] NullVectorInt = {0, 0};
         private static readonly Vector2Int TransformVector = new Vector2Int(1, -1); 
         
         /// <summary>
@@ -82,20 +80,37 @@ namespace Device.Video
         public static void SetHandlerPosition(this RectTransform rectTransform, object arg, in Vector2 containerResolutionRatio)
         {
             var newPosition = arg.AutoSizedVector(in containerResolutionRatio);
-            if (IsNullPosition(newPosition))
-            {
-                Debug.Log("Not set!");
+            if (newPosition.IsNullPosition())
                 return;
-            }
 
             rectTransform.anchoredPosition = newPosition * TransformVector; 
+        }
+
+        /// <summary>
+        /// Устанавливает новый размер объекта, если это необходимо (если размер не 0, 0) 
+        /// </summary>
+        public static void SetHandlerSize(this RectTransform rectTransform, object arg,
+            in Vector2 containerResolutionRatio)
+        {
+            if (((Vector2Int) arg).IsNullSize())
+                return;
+            
+            var size = arg.AutoSizedVector(in containerResolutionRatio);
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x); 
+            rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y); 
         }
         
         /// <summary>
         /// Проверяет, является ли теущая позиция нулевой 
         /// </summary>
-        private static bool IsNullPosition(Vector2 position)
-            => NullVector.Where((t, i) => position[i] < t).Any();
+        public static bool IsNullPosition(this Vector2 position)
+            => NullVector.Where((t, i) => position[i] < t).Any(); 
+        
+        /// <summary>
+        /// Проверяет, является ли текущий размер нулевым 
+        /// </summary>
+        public static bool IsNullSize(this Vector2Int position)
+            => NullVectorInt.Where((t, i) => position[i] == t).Any();
         
         /// <summary>
         /// Преобразует переданные данные типа Vector2Int в Vector2 и скалирует по соотноешнию _containerResolutionRatio
