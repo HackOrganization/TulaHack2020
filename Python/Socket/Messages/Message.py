@@ -1,5 +1,6 @@
 from Socket.Messages.Utils.MessageTypes import MessageTypes
 import Socket.Utils.ByteConverter as ByteConverter
+import Socket.Messages.Utils.Params as Params
 
 
 # Базовый класс сообщения
@@ -8,12 +9,12 @@ class Message:
     MessageType: MessageTypes  # byte 1
 
     def __init__(self):
-        self.MessageLength = 5
+        self.MessageLength = Params.MESSAGE_HEADER_LENGTH + 1
         self.MessageType = MessageTypes.Null
 
     def Serialize(self):
         returnArray = bytearray()
-        length = 4 + 1
+        length = Params.MESSAGE_HEADER_LENGTH + 1
         returnArray.extend(ByteConverter.GetBytesFromInteger(length))
         returnArray.extend(ByteConverter.GetBytesFromByteInteger(self.MessageType))
         return returnArray

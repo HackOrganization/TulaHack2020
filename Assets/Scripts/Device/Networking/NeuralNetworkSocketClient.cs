@@ -57,7 +57,13 @@ namespace Device.Networking
             switch (messageType)
             {
                 case MessageType.CloseConnection:
-                    client.SafeDispose();
+                    var sendGoodbye = ((CloseConnectionMessage) args[1]).SendGoodbyeMessage;
+                    if(sendGoodbye)
+                        client.Dispose();
+                    else
+                        client.SafeDispose();
+                    
+                    //ToDo: close application
                     break;
                 
                 case MessageType.WideFieldPosition:

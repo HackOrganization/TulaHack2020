@@ -1,11 +1,23 @@
+import socket as SocketLib
+
+from Socket.Messages.WideFieldPositionMessage import WideFieldPositionMessage
 from Socket.Messages.Utils.MessageTypes import MessageTypes
 
 
 # Выполняет действие в соотвествии с типом входящего сообщения и отправляет результат клиенту
-def SendResponse(client, messageType: MessageTypes, message):
+def SendResponse(client: SocketLib.socket, messageType: MessageTypes, message):
     if messageType == MessageTypes.CloseConnection:
-        # ToDo: make action
         print("Close connection")
-    elif messageType == MessageTypes.WideFieldImage or messageType == MessageTypes.TightFieldImage:
-        # ToDo: make action
-        print("Send coordinates")
+        return False
+    elif messageType == MessageTypes.WideFieldImage:
+        # ToDo: save Id
+        # ToDo: send to motionDetection
+        responseObject = WideFieldPositionMessage(message.PacketId, message)
+        print(f"[WideField] Bytes sent: {client.send(responseObject.Serialize())}")
+        print(f"[WideField] Sent coordinates {responseObject.PositionX}:{responseObject.PositionY}")
+    elif messageType == MessageTypes.TightFieldImage:
+        # ToDo: Save Id
+        # ToDo: Send to neural
+        print("[TightField] Send coordinates")
+
+    return True
