@@ -270,6 +270,8 @@ namespace Networking.Client
         /// </summary>
         public void SafeDispose()
         {
+            Debug.Log($"Closing socket: {Socket.LocalEndPoint} -> {Socket.RemoteEndPoint}");
+            
             Dispose(true, false);
             GC.SuppressFinalize(this);
         }

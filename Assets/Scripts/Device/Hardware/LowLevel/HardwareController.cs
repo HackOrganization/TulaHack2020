@@ -58,12 +58,26 @@ namespace Device.Hardware.LowLevel
         {
             _untilPortOpened = new WaitUntil(() => _serialPortController != null && _serialPortController.IsOpened);
             _loopWait = new WaitForSeconds(1f / SerialPortParams.TIMEOUT);
-            
-            StartSearchingDevice();
+
+            //ToDo: Comment TEST_LockSearchingDevice, uncomment StartSearchingDevice
+            TEST_LockSearchingDevice();
+            //StartSearchingDevice();
 
             StartCoroutine(CorSendPosition());
         }
 
+        private void TEST_LockSearchingDevice()
+        {
+            
+            _serialPortController = SerialPortParams.NewSerialPort(SerialPort.GetPortNames()[0]);
+            _serialPortController.onMessageReceived += OnMessageReceived;
+            
+            foreach (var cameraBaseController in CameraBaseControllers)
+                cameraBaseController.Initialize(_serialPortController);
+            
+            _serialPortController.Start();
+        }
+        
         /// <summary>
         /// Начинает поиск устройства по COM-портам
         /// </summary>
@@ -118,7 +132,6 @@ namespace Device.Hardware.LowLevel
             yield return _untilPortOpened;//new WaitUntil(() => _serialPortController != null && _serialPortController.IsOpened);
 
             Debug.Log("Start calibration....");
-            //_serialPortController.Send(CommunicationParams.GetDefaultSetupMessage());
             _serialPortController.Send(CommunicationParams.GetCalibrationMessage());
             yield return new WaitUntil(()=> _calibrateDone);
             
@@ -139,7 +152,6 @@ namespace Device.Hardware.LowLevel
                 if (success)
                 {
                     var moveMessage = CommunicationParams.GetMoveMessage(moveInfosArray);
-                    //Debug.Log($"Input detected. Sending command \"{moveMessage}\"");
                     _serialPortController.Send(moveMessage);
                 }
                 yield return _loopWait;

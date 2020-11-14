@@ -4,8 +4,8 @@ import Socket.Utils.ByteConverter as ByteConverter
 # Сущность данных, получаемых от клиента
 # Аккумулирует в себе пакеты, пока сообщение не придет полностью
 class ReceiveObject:
-    buffer = bytearray()
-    CashedMessage = bytearray()
+    buffer = bytearray() # []
+    CashedMessage = bytearray() # []
 
     __messageSize = -1
 

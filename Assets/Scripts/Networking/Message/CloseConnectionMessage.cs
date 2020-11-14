@@ -17,11 +17,11 @@ namespace Networking.Message
         /// <summary>
         /// Расположен ли сокет на стороне клиента
         /// </summary>
-        public readonly bool IsClientSide;
+        public readonly bool SendGoodbyeMessage;
 
-        public CloseConnectionMessage(bool isClientSide)
+        public CloseConnectionMessage(bool sendGoodbyeMessage)
         {
-            IsClientSide = isClientSide;
+            SendGoodbyeMessage = sendGoodbyeMessage;
         }
         
         /// <summary>
@@ -34,7 +34,7 @@ namespace Networking.Message
             
             var offset = MessageExtensions.HEADER_LENGTH;
             offset = MessageExtensions.SetByte(in data, (byte) MessageType, offset);
-            MessageExtensions.SetBytes(in data, IsClientSide, offset);
+            MessageExtensions.SetBytes(in data, SendGoodbyeMessage, offset);
             return data;
         }
 
