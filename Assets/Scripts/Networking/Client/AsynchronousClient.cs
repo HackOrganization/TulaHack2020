@@ -139,7 +139,7 @@ namespace Networking.Client
                         return;
                     }
                 }
-                
+
                 if (state.MessageReceived)
                 {
                     var messageType = (MessageType) state.ReceivedBytes[MessageExtensions.HEADER_LENGTH];
@@ -149,8 +149,17 @@ namespace Networking.Client
                         EventManager.RaiseEvent(EventType.ReceivedMessage, messageType, message, state.Client);
                     });
                 }
+
                 state.Client._receiveDone.Set();
-                
+
+            }
+            catch (SocketException se)
+            {
+                if (se.ErrorCode == 0x80004005)
+                {
+                    var state = (ClientStateObject) ar.AsyncState;
+                    state.Client.SafeDispose();
+                }
             }
             catch (Exception e)
             {
@@ -163,23 +172,33 @@ namespace Networking.Client
         /// </summary>
         public void Send(byte[] data, bool runAsync = true)
         {
-            try
+            void AsyncSend()
             {
-                void AsyncSend()
+                try
                 {
                     Socket.BeginSend(data, 0, data.Length, 0, SendCallback, this);
-                    _sendDone.WaitOne();    
+                    _sendDone.WaitOne();
                 }
-                
-                if(runAsync)
-                    ThreadManager.AsyncExecute(AsyncSend, null);
-                else
-                    AsyncSend();
+                catch (ObjectDisposedException)
+                {
+                    Debug.Log("Client was disposed!");
+                    _sendDone.Set();
+                }
+                catch (SocketException exception)
+                {
+                    Debug.Log("May connection was closed!");
+                    _sendDone.Set();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e);
+                }
             }
-            catch (Exception e)
-            {
-                Debug.Log(e);
-            }
+            
+            if(runAsync)
+                ThreadManager.AsyncExecute(AsyncSend, null);
+            else
+                AsyncSend();
         }
 
         /// <summary>
@@ -191,8 +210,7 @@ namespace Networking.Client
             {
                 var client = (AsynchronousClient) ar.AsyncState;
                 var bytesSend = client.Socket.EndSend(ar);
-                Debug.Log($"Sent bytes: {bytesSend}");
-
+                
                 client._sendDone.Set();
             }
             catch (Exception e)
@@ -260,9 +278,11 @@ namespace Networking.Client
         {
             if (!IsDisposed)
             {
+                EventManager.RaiseEvent(EventType.EndWork, true);
+                IsDisposed = true;
+                
                 if (disposing)
                     Close(sayGoodbye);
-                IsDisposed = true;
             }
         }
         

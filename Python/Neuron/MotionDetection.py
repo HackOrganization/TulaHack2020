@@ -47,10 +47,10 @@ class MotionDetection(Thread):
                     random.randint(0, 640),
                     random.randint(0, 480),
                     random.randint(0, 320),
-                    random.randint(0, 240),)
+                    random.randint(0, 240))
 
-                print(f"[WideField] Bytes sent: {item['client'].send(responseObject.Serialize())}")
-                print(f"[WideField] Sent object {responseObject.PositionX}:{responseObject.PositionY} [{responseObject.SizeX}:{responseObject.SizeY}]")
+                item['client'].send(responseObject.Serialize())
+                print(f"[WideField] Sent object [{packetId}] | {responseObject.PositionX}:{responseObject.PositionY} | [{responseObject.SizeX}:{responseObject.SizeY}]")
 
         self.Locker.acquire()
         try:
@@ -66,6 +66,7 @@ class MotionDetection(Thread):
 
         self.Locker.acquire()
         try:
+            print(f"Received packetId: {packetId}")
             self.BufferDictionary.update({packetId: {'client': kwargs['client'], 'data': byteArray}})
         finally:
             self.Locker.release()

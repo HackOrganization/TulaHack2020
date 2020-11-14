@@ -3,7 +3,6 @@ import socket as SocketLib
 from Core.EventManager import EventManager
 from Core.Utils.EventType import EventType
 from Socket.Messages.Utils.MessageTypes import MessageTypes
-from Socket.Messages.WideFieldPositionMessage import WideFieldPositionMessage
 
 
 # Выполняет действие в соотвествии с типом входящего сообщения и отправляет результат клиенту

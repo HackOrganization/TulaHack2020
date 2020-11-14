@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityAsyncHelper.Core;
 
 namespace Core 
 {
@@ -16,6 +17,8 @@ namespace Core
         ReceivedMessage, //MessageType, IMessage, AsynchronousClient
         
         DeviceGoPosition, //CameraTypes, PacketId[ushort], Position[Vector2Int]
+        
+        EndWork
     }
 
     /// <summary>
@@ -64,6 +67,14 @@ namespace Core
             {
                 handler(args);
             }
+        }
+
+        /// <summary>
+        /// Вызывает событие в основном потоке 
+        /// </summary>
+        public static void RaiseOnMainThread(EventType type, params object[] args)
+        {
+            ThreadManager.ExecuteOnMainThread(()=> RaiseEvent(type, args));
         }
     }
 }

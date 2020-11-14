@@ -32,7 +32,6 @@ class EventManagerEntity:
             self.HandlerMap.pop(eventType)
 
     def RaiseEvent(self, eventType: EventType, kwargs):
-        print(self)
         if eventType not in self.HandlerMap:
             return
 

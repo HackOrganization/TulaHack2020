@@ -62,8 +62,6 @@ namespace Device.Networking
                         client.Dispose();
                     else
                         client.SafeDispose();
-                    
-                    //ToDo: close application
                     break;
                 
                 case MessageType.WideFieldPosition:

@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Linq;
 using System.Net;
+using Core;
 using Core.OrderStart;
 using Device.Hardware.LowLevel;
 using Device.Utils;
 using UnityEngine;
 using Utils;
+using EventType = Core.EventType;
 using NetworkingParams = Networking.Utils.Params;
 
 namespace Device
@@ -47,9 +49,9 @@ namespace Device
         /// </summary>
         public void OnStart()
         {
-            _untilAllReady = new WaitUntil(() => 
-                deviceControllers.All(d => d.IsReady) 
-                && hardwareController.IsInitialized);
+            EventManager.AddHandler(EventType.EndWork, OnEndWork);
+            
+            _untilAllReady = new WaitUntil(ComponentsAreReady);
             _loopAwait = new WaitForSeconds(Params.CAPTURE_PER_SECOND);
             
             var deviceConnectionPoints = DeviceConnectionPoints;
@@ -61,11 +63,28 @@ namespace Device
             if (autoRun)
                 Run();
         }
-
+        
         private void OnDisable()
         {
+            EventManager.RemoveHandler(EventType.EndWork, OnEndWork);
             StopCoroutine(CorRun());
             _isDisposed = true;
+        }
+
+        /// <summary>
+        /// Все компоненты инициализированы и не разрушены 
+        /// </summary>
+        private bool ComponentsAreReady()
+        {
+            return deviceControllers.All(d => d.IsReady) && hardwareController.IsReady;
+        }
+
+        /// <summary>
+        /// перехватывает сообщение об окончании работы 
+        /// </summary>
+        private void OnEndWork(params object[] args)
+        {
+            _isDisposed = (bool) args[0];
         }
 
         /// <summary>
@@ -96,9 +115,10 @@ namespace Device
                 yield return _loopAwait;
                 
                 //ToDo: поставлено в целях теста отправки одного изображения
-                if(++counter == 5)
+                if(++counter == int.MaxValue || !ComponentsAreReady())
+                    //ToDo: dispose all controllers (Neural, AsyncClient, Hardware...)
                     yield break;
             }
-        }
+        }        
     }
 }

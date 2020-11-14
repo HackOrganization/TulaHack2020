@@ -78,6 +78,9 @@ namespace Device.Hardware.HighLevel
         {
             if (!IsDisposed)
             {
+                EventManager.RaiseEvent(EventType.EndWork, true);
+                IsDisposed = true;
+                
                 if (disposing)
                 {
                     //Это ссылка на объект HardwareController._serialPortController
@@ -85,7 +88,6 @@ namespace Device.Hardware.HighLevel
                     SerialPortController = null;
                     EventManager.RemoveHandler(EventType.DeviceGoPosition, OnNewPositionCaptured);
                 }
-                IsDisposed = true;
             }
         }
         
