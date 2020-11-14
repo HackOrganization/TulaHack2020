@@ -125,8 +125,11 @@ namespace Device.Hardware.LowLevel
                     
                     _stringComparer = null;
                     _readThread.Abort();
+                    Debug.Log($"Close SerialPort: {_serialPort.PortName}");
                     _serialPort.Close();
+                    Debug.Log($"Dispose SerialPort: {_serialPort.PortName}");
                     _serialPort.Dispose();
+                    Debug.Log("SerialPort fully disconnected!");
                 }
                 _isDisposed = true;
             }

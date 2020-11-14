@@ -1,3 +1,4 @@
+import cv2
 import time
 import random
 import Neuron.Utils.Params as Params
@@ -8,6 +9,8 @@ from Core.Utils.EventType import EventType
 from Neuron.Utils.JpgDecoder import JpgDecoder
 from keras.preprocessing.image import img_to_array
 from Socket.Messages.WideFieldPositionMessage import WideFieldPositionMessage
+
+import Neuron.TankCapture as TankCapture
 
 
 class MotionDetection(Thread):
@@ -24,6 +27,7 @@ class MotionDetection(Thread):
         self.start()
 
     def run(self):
+        # anyDrawn = False
         while not self.__isDisposed:
             if len(self.BufferDictionary) == 0:
                 time.sleep(Params.FPS)
@@ -39,18 +43,21 @@ class MotionDetection(Thread):
             keys = list(self.WorkDictionary.keys())
             for packetId in keys:
                 item = self.WorkDictionary.pop(packetId)
-                # ToDo: detect
+                # Detect
+                prob, center = TankCapture.Execute(item['image'], packetId)
+
+                # anyDrawn = True
                 if self.__isDisposed:
                     break
                 responseObject = WideFieldPositionMessage(
                     packetId,
-                    random.randint(0, 640),
-                    random.randint(0, 480),
-                    random.randint(0, 320),
-                    random.randint(0, 240))
+                    center[0],
+                    center[1],
+                    random.randint(100, 120),
+                    random.randint(100, 120))
 
                 item['client'].send(responseObject.Serialize())
-                print(f"[WideField] Sent object [{packetId}] | {responseObject.PositionX}:{responseObject.PositionY} | [{responseObject.SizeX}:{responseObject.SizeY}]")
+                # print(f"[WideField] Sent object [{packetId}] | {responseObject.PositionX}:{responseObject.PositionY} | [{responseObject.SizeX}:{responseObject.SizeY}]")
 
         self.Locker.acquire()
         try:
@@ -58,16 +65,22 @@ class MotionDetection(Thread):
             self.WorkDictionary.clear()
         finally:
             self.Locker.release()
+
+        # if anyDrawn:
+        #     cv2.destroyAllWindows()
+
         print("Motion detection closed!")
 
     def OnMessageReceive(self, kwargs):
         packetId = kwargs['message'].PacketId
-        byteArray = img_to_array(JpgDecoder.Decode(kwargs['message']))
+        image = JpgDecoder.Decode(kwargs['message'])
+        # byteArray = img_to_array(JpgDecoder.Decode(kwargs['message']))
 
         self.Locker.acquire()
         try:
             print(f"Received packetId: {packetId}")
-            self.BufferDictionary.update({packetId: {'client': kwargs['client'], 'data': byteArray}})
+            self.BufferDictionary.update({packetId: {'client': kwargs['client'], 'image': image}})
+            # self.BufferDictionary.update({packetId: {'client': kwargs['client'], 'data': byteArray}})
         finally:
             self.Locker.release()
 

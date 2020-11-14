@@ -23,6 +23,10 @@ namespace Device.Video
         [SerializeField] 
         private CameraIdentificationSettings cameraIdentificationSettings;
 
+        [Header("Object handler")] 
+        [SerializeField] private ObjectHandler objectHandler;
+        
+
         /// <summary>
         /// Текущий статус контроллера 
         /// </summary>
@@ -70,6 +74,20 @@ namespace Device.Video
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        private void SetUpOnPlay()
+        {
+            if(_initialized)
+                return;
+            
+            SetUpSendFrame();
+            SetUpDestination();
+            objectHandler.Initialize(_cameraType, destination.rectTransform, _webCamResolution);
+            _initialized = true;
+        }
+        
+        /// <summary>
         /// Настраиваем объект, который будем отправлять
         /// </summary>
         private void SetUpSendFrame()
@@ -102,13 +120,8 @@ namespace Device.Video
 
             Status = VideoStatuses.Play;
             
-            if(_initialized)
-                return true;
+            SetUpOnPlay();
             
-            SetUpSendFrame();
-            SetUpDestination();
-            _initialized = true;
-
             return true;
         }
 

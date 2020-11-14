@@ -23,6 +23,8 @@ namespace Networking.Client
         public readonly bool IsClientSide;
         public readonly Socket Socket;
 
+        private byte _connectAttempts;
+
         /// <summary>
         /// Конструктор класса Асинхронного клиента на строне Клиента
         /// </summary>
@@ -81,9 +83,21 @@ namespace Networking.Client
             }
             catch (SocketException se)
             {
-                Debug.Log("Next attempt....");
-                Thread.Sleep(Params.RETRY_SETTING_CONNECTION_TIMEOUT);
-                client.Socket.BeginConnect(connectionObject.RemoteEndPoint, ConnectCallback, connectionObject);
+                if (se.ErrorCode == 10061)
+                {
+                    if (client.IsDisposed || ++client._connectAttempts == byte.MaxValue)
+                    {
+                        client._connectDone.Set();
+                        return;
+                    }
+                    
+                    Debug.Log($"Next attempt ({client._connectAttempts})....");
+                    Thread.Sleep(Params.RETRY_SETTING_CONNECTION_TIMEOUT);
+                    client.Socket.BeginConnect(connectionObject.RemoteEndPoint, ConnectCallback, connectionObject);
+                    
+                    return;
+                }
+                throw;
             }
             catch (Exception e)
             {
@@ -131,27 +145,22 @@ namespace Networking.Client
                 var bytesRead = socket.EndReceive(ar);
 
                 if (bytesRead > 0)
-                {
                     state.ReceivedBytes.AddRange(state.Buffer.Take(bytesRead));
-                    if (!state.MessageReceived)
-                    {
-                        socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, 0, ReceiveCallback, state);
-                        return;
-                    }
-                }
-
+                
                 if (state.MessageReceived)
                 {
                     var messageType = (MessageType) state.ReceivedBytes[MessageExtensions.HEADER_LENGTH];
-                    ThreadManager.ExecuteOnMainThread(() =>
-                    {
-                        var message = SerializeManager.Deserialise(messageType, state.ReceivedBytes.ToArray());
-                        EventManager.RaiseEvent(EventType.ReceivedMessage, messageType, message, state.Client);
-                    });
+                    var message = SerializeManager.Deserialise(messageType, state.ReceivedBytes.ToArray());
+                    
+                    EventManager.RaiseOnMainThread(EventType.ReceivedMessage, messageType, message, state.Client);
+                    
+                    state.Client._receiveDone.Set();
                 }
-
-                state.Client._receiveDone.Set();
-
+                else
+                {
+                    socket.BeginReceive(state.Buffer, 0, state.Buffer.Length, 0, ReceiveCallback, state);
+                    Debug.Log("Receive continued");
+                }
             }
             catch (SocketException se)
             {
@@ -159,6 +168,7 @@ namespace Networking.Client
                 {
                     var state = (ClientStateObject) ar.AsyncState;
                     state.Client.SafeDispose();
+                    //ToDo: mb reconnect?
                 }
             }
             catch (Exception e)

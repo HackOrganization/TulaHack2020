@@ -22,18 +22,12 @@ namespace Device.Hardware.LowLevel.Utils
         /// </summary>
         public bool RequestCanceled { get; private set; }
 
-        /// <summary>
-        /// Имя порта
-        /// </summary>
-        public readonly string PortName;
-
         private bool _result;
         private int _currentResponseTime;
         private SerialPortController _serialPortController;
         
         public SerialPortDetectorThreadWrapper(string portName, bool sendOnCompletedToMainThread = true) : base(sendOnCompletedToMainThread)
         {
-            PortName = portName;
             _serialPortController = SerialPortParams.NewSerialPort(portName);
             _serialPortController.onDetected += Detect;
         }
@@ -62,7 +56,7 @@ namespace Device.Hardware.LowLevel.Utils
         /// </summary>
         protected override void OnCompleted()
         {
-            onCompleted(this, new SerialPortDetectorEventArgs(_result, _serialPortController.PortName));
+            onCompleted(this, new SerialPortDetectorEventArgs(_result, _serialPortController));
         }
 
         /// <summary>
@@ -97,7 +91,10 @@ namespace Device.Hardware.LowLevel.Utils
                 {
                     onCompleted = null;
                     _serialPortController.onDetected -= Detect;
-                    _serialPortController.Dispose();
+                    if (_result)
+                        _serialPortController = null;
+                    else
+                        _serialPortController.Dispose();
                 }
                 _isDisposed = true;
             }

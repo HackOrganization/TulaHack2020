@@ -83,7 +83,7 @@ namespace Device.Hardware.Test
                     ? new Vector2Int((int)value, 0)
                     : new Vector2Int(0, (int)value);
                     
-            EventManager.RaiseEvent(EventType.DeviceGoPosition, cameraType, 0, vectorValue);
+            EventManager.RaiseEvent(EventType.DeviceGoPosition, cameraType, ushort.MinValue, vectorValue);
         }
     }
 }
