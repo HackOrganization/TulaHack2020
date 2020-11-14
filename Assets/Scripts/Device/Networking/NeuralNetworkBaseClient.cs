@@ -68,6 +68,7 @@ namespace Device.Networking
                     
                     EventManager.RemoveHandler(EventType.ClientConnected, OnConnected);
                     EventManager.RemoveHandler(EventType.ReceivedMessage, OnReceived);
+                    Client?.Dispose();
                 }
                 IsDisposed = true;
             }

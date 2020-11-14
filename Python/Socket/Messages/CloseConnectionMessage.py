@@ -1,7 +1,8 @@
-from Socket.Messages.Message import Message
-import Socket.Utils.ByteConverter as ByteConverter
-from Socket.Messages.Utils.MessageTypes import MessageTypes
 import Socket.Messages.Utils.Params as Params
+import Socket.Utils.ByteConverter as ByteConverter
+
+from Socket.Messages.Message import Message
+from Socket.Messages.Utils.MessageTypes import MessageTypes
 
 
 # Класс сообщения о закрытии сокета

@@ -1,6 +1,6 @@
-#Возвращает булево значение из массива байтов по указанному смещению
+# Возвращает булево значение из массива байтов по указанному смещению
 def GetBool(bytearrayValue: bytearray, offset=0):
-    return bool(GetInteger(bytearray, offset, 1, False))
+    return bool(GetInteger(bytearrayValue, offset, 1, False))
 
 
 # Возвращает число указанной из массива байтов начиная с "offset" (параметрами "length" и "signed" регулируется тип

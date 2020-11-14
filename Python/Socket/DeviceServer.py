@@ -1,6 +1,7 @@
 import time
 import socket as SocketLib
 import Socket.Utils.Params as Params
+import Socket.Messages.Utils.Params as MessageParams
 import Socket.Utils.ByteConverter as ByteConverter
 import Socket.Messages.Core.MessageDeserializer as MessageDeserializer
 import Socket.Messages.Core.MessageResponser as MessageResponser
@@ -96,10 +97,11 @@ class ClientThread(Thread):
                     receiveObject.buffer.clear()
 
                 # Определяем тип сообщения
-                messageType = MessageTypes(ByteConverter.GetInteger(receiveObject.CashedMessage, 4, 1))
+                messageType = MessageTypes(
+                    ByteConverter.GetInteger(
+                        receiveObject.CashedMessage, MessageParams.MESSAGE_HEADER_LENGTH, 1))
                 # Получаем объект сообщения
                 message = MessageDeserializer.Deserialize(messageType, receiveObject.CashedMessage)
-                print(f"ReceivedMessage: {message}")
                 # Очищаем кэш
                 receiveObject.CashedMessage.clear()
 
@@ -110,7 +112,7 @@ class ClientThread(Thread):
                 continue
 
         print(f"Calling close client {self.Client}")
-        message = CloseConnectionMessage(False).Serialize()
+        message = CloseConnectionMessage(not __receiveEnabled).Serialize()
         self.Client.send(message)
         self.Client.shutdown(SocketLib.SHUT_RDWR)
         self.Client.close()

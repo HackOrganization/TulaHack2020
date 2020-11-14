@@ -1,7 +1,8 @@
-from Socket.Messages.Utils.MessageTypes import MessageTypes
-import Socket.Utils.ByteConverter as ByteConverter
-from Socket.Messages.Message import Message
 import Socket.Messages.Utils.Params as Params
+import Socket.Utils.ByteConverter as ByteConverter
+
+from Socket.Messages.Utils.MessageTypes import MessageTypes
+from Socket.Messages.Message import Message
 
 
 # Класс сообщения картинки с одной из камер

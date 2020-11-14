@@ -1,9 +1,13 @@
-from Socket.Messages.Utils.MessageTypes import MessageTypes
+import Socket.Messages.Utils.Params as Params
 import Socket.Utils.ByteConverter as ByteConverter
-from Socket.Messages.Message import Message
+import random as random
+
+from Socket.Messages.Utils.MessageTypes import MessageTypes
 from Socket.Messages.ImageMessage import ImageMessage
+from Socket.Messages.Message import Message
 
 
+# Класс сообщения координат объекта на картинке
 class WideFieldPositionMessage(Message):
     PacketId: int  # ushort 2
     PositionX: int  # ushort : 2
@@ -13,10 +17,10 @@ class WideFieldPositionMessage(Message):
         self.Initialize(packetId, positionX, positionY)
 
     def __init__(self, packetId: int, message: ImageMessage):
-        self.Initialize(packetId, range(0, message.Width, message.Height))
+        self.Initialize(packetId, random.randint(0, message.Width), random.randint(0, message.Height))
 
     def Initialize(self, packetId: int, positionX: int, positionY: int):
-        length = 4 + 1 + 2 + 2
+        length = Params.MESSAGE_HEADER_LENGTH + 1 + 2 + (2 + 2)
         self.MessageLength = length
         self.MessageType = MessageTypes.WideFieldPosition
         self.PacketId = packetId
