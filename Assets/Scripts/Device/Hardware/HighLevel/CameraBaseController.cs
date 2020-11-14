@@ -42,7 +42,9 @@ namespace Device.Hardware.HighLevel
         public ILastHandledPosition LastHandledPosition { get; protected set; }
 
         private SerialPortController _serialPortController;
+
         protected Vector2Int CashedDevicePosition;
+        private Vector2Int _handledPosition;
 
         public virtual void Initialize(SerialPortController serialPortController)
         {
@@ -55,9 +57,9 @@ namespace Device.Hardware.HighLevel
         /// <summary>
         /// Фиксирует текущую позицию устройства, возвращает ключ в словаре 
         /// </summary>
-        public void FixPosition()
+        public void CashPosition()
         {
-            CashedDevicePosition = CurrentPosition;
+            CashedDevicePosition = _handledPosition;
         }
         
         #region GAMEEVENTS
@@ -68,6 +70,7 @@ namespace Device.Hardware.HighLevel
         private void SetSubscription()
         {
             EventManager.AddHandler(EventType.DeviceGoPosition, OnNewPositionCaptured);
+            EventManager.AddHandler(EventType.DeviceHandlePosition, OnHandlePosition);
         }
         
         /// <summary>
@@ -76,12 +79,24 @@ namespace Device.Hardware.HighLevel
         private void ResetSubscription()
         {
             EventManager.RemoveHandler(EventType.DeviceGoPosition, OnNewPositionCaptured);
+            EventManager.RemoveHandler(EventType.DeviceHandlePosition, OnHandlePosition);
         }
         
         /// <summary>
         /// Получение команды двигаться в определенную координату 
         /// </summary>
         protected abstract void OnNewPositionCaptured(object[] args);
+
+        /// <summary>
+        /// Фиксирует позицию последнего сохраненного кадра 
+        /// </summary>
+        private void OnHandlePosition(object[] args)
+        {
+            if((CameraTypes) args[0] != CameraType)
+                return;
+
+            _handledPosition = CurrentPosition;
+        }
         
         #endregion
         

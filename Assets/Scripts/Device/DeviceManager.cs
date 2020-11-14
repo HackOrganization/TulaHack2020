@@ -106,9 +106,8 @@ namespace Device
             while (!_isDisposed)
             {
                 _captureLocked = true;
-                yield return new WaitForEndOfFrame();
-
-                hardwareController.WideFieldCameraController.FixPosition();
+                
+                hardwareController.WideFieldCameraController.CashPosition();
                 WideFieldDevice.OnSendImageRequest();
                 
                 _debugController.Log();

@@ -49,8 +49,6 @@ namespace Device
                 if(!videoHandler.Play())
                     return;
             
-            videoHandler.Capture();
-            
             var newMessage = new ImageMessage(
                 cameraType == CameraTypes.WideField
                     ? MessageType.WideFieldImage

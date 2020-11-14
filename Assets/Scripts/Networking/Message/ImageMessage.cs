@@ -55,7 +55,7 @@ namespace Networking.Message
             
             var width = MessageExtensions.GetUInt16(data, ref offset);
             var height = MessageExtensions.GetUInt16(data, ref offset);
-            message.Image = new Texture2D(width, height, TextureFormat.RGBA32,false);
+            message.Image = new Texture2D(width, height, TextureFormat.RGB24,false);
             message.Image.LoadImage(MessageExtensions.GetBytes(data, ref offset));
             
             return message;    

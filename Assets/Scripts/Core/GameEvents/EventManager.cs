@@ -15,7 +15,9 @@ namespace Core.GameEvents
         ClientConnected, //IsClientSide, LocalEndPoint, RemoteEndPoint
         ReceivedMessage, //MessageType, IMessage, AsynchronousClient
         
+        DeviceHandlePosition, //CameraTypes
         DeviceGoPosition, //CameraTypes, Position[Vector2Int]
+        
         CameraDrawObject,//CameraTypes, Position[Vector2Int], Size[Vector2Int], 
         CaptureNewImage, //CameraTypes
         
