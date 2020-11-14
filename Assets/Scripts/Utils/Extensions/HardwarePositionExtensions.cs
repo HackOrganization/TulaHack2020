@@ -1,6 +1,7 @@
 ﻿using Core.MathConversion.Utils;
 using UnityEngine;
 
+
 namespace Utils.Extensions
 {
     public static class HardwarePositionExtensions
@@ -8,7 +9,7 @@ namespace Utils.Extensions
         /// <summary>
         /// Нужно ли обновлять позицию широкопольного изображения
         /// </summary>
-        public static bool IsWideFieldUpdatable(this int currentPosition, in Vector2Int newPosition)
+        public static bool WideFieldNeedUpdate(this int currentPosition, in Vector2Int newPosition)
         {
             return Mathf.Abs(newPosition.x - currentPosition) >= WideFieldParams.AngleToSteps;
         }
@@ -16,10 +17,10 @@ namespace Utils.Extensions
         /// <summary>
         /// Нужно ли обновлять позицию узкопольной камеры 
         /// </summary>
-        public static bool IsTightFieldUpdatable(this Vector2Int currentPosition, in Vector2Int newPosition)
+        public static bool TightFieldNeedUpdate(this Vector2Int currentPosition, in Vector2Int newPosition)
         {
-            //ToDo: write checking for update need
-            return true;
+            return Mathf.Abs(newPosition.y - currentPosition.y) >= TightFieldParams.VerticalAngleToSteps
+                   || Mathf.Abs(newPosition.x - currentPosition.x) >= TightFieldParams.HorizontalAngleToSteps;
         }
     }
 }

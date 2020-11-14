@@ -24,8 +24,5 @@ class JpgDecoder:
         with BytesIO(messageImage) as stream:
             image = Image.open(stream)
             JpgDecoder.save(image)
-            #imageName = f"server{message.PacketId}.jpg"
-            # print(f"{imageName} size: {image.size}")
-            #image.save(imageName)
 
         return image

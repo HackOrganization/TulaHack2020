@@ -3,6 +3,8 @@ using System.Linq;
 using Device.Hardware.LowLevel.Utils.Communication.Infos;
 using UnityEngine;
 
+using LowLevelParams = Device.Hardware.LowLevel.Utils.Params;
+
 namespace Device.Hardware.LowLevel.Utils.Communication
 {
     /// <summary>
@@ -11,40 +13,55 @@ namespace Device.Hardware.LowLevel.Utils.Communication
     public static class CommunicationParams
     {
         /// <summary>
-        /// Количество управляемых устройств
+        /// Запрос идентификации устройства
         /// </summary>
-        public const int DEVICES_COUNT = 3;
-        
-        /// <summary>
-        /// Время поворота полного круга (в секундах)
-        /// </summary>
-        public const int FULL_LOOP_TIME = 4;
-
-        /// <summary>
-        /// Количество шагов за полный круг (для широкопольной камеры) 
-        /// </summary>
-        public const int WIDEFIELD_FULL_LOOP_STEPS = 5730;
-        public const int TIGHTFIELD_FULL_LOOP_STEPS_X = 5730;
-        public const int TIGHTFIELD_FULL_LOOP_STEPS_Y = 5730;
-        
         public const string HELLO_REQUEST = "T;";
+        
+        /// <summary>
+        /// Ответ на запрос идентификации устройства
+        /// </summary>
         public const string HELLO_RESPONSE = "PSINA";
 
+        /// <summary>
+        /// Ответ на запрос калибровки
+        /// </summary>
         public const string CALIBRATION_RESPONSE = "Calibration done";
         
+        /// <summary>
+        /// Знак разделитель
+        /// </summary>
         public const char SEPARATOR = ',';
+        
+        /// <summary>
+        /// Флаг окончания изображения
+        /// </summary>
         private const char END_LINE_FLAG = ';';
 
+        /// <summary>
+        /// Флаг установки параметров
+        /// </summary>
         private const char SETUP_FLAG = 'S';
+        
+        /// <summary>
+        /// Флаг запроса на перемещения в указанную позицию
+        /// </summary>
         private const char MOVE_FLAG = 'M';
-        private const char POSITION_FLAG = 'P';
+        
+        /// <summary>
+        /// Флаг Запрос/Получения ответа о текущей позиции
+        /// </summary>
+        public const char POSITION_FLAG = 'P';
+        
+        /// <summary>
+        /// Флаг начала запроса на калибровку 
+        /// </summary>
         private const char CALIBRATION_FLAG = 'C';
+        
+        /// <summary>
+        /// Флаг начала запросов управления состоянием лазера
+        /// </summary>
         private const char LASER_FLAG = 'L';
         
-
-        public const int DEFAULT_SPEED = 3500;
-        public const int DEFAULT_ACCELARATION = 0;
-
         /// <summary>
         /// Возвращает команду установки параметров с базовыми настройками 
         /// </summary>
@@ -56,11 +73,11 @@ namespace Device.Hardware.LowLevel.Utils.Communication
         public static string GetSetupMessage(params SetupInfo[] setupInfos)
         {
             var collectionInfos = new List<SetupInfo>(setupInfos);
-            while(collectionInfos.Count < DEVICES_COUNT)
+            while(collectionInfos.Count < LowLevelParams.DEVICES_COUNT)
                 collectionInfos.Add(new SetupInfo());
 
             var command = $"{SETUP_FLAG}";
-            command += CommandConcat(collectionInfos.Take(DEVICES_COUNT).ToArray());
+            command += CommandConcat(collectionInfos.Take(LowLevelParams.DEVICES_COUNT).ToArray());
             return command;
         }
         
@@ -79,11 +96,11 @@ namespace Device.Hardware.LowLevel.Utils.Communication
         public static string GetMoveMessage(params MoveInfo[] moveInfos)
         {
             var collectionInfos = new List<MoveInfo>(moveInfos);
-            while(collectionInfos.Count < DEVICES_COUNT)
+            while(collectionInfos.Count < LowLevelParams.DEVICES_COUNT)
                 collectionInfos.Add(new MoveInfo());
 
             var command = $"{MOVE_FLAG}";
-            command += CommandConcat(collectionInfos.Take(DEVICES_COUNT).ToArray());
+            command += CommandConcat(collectionInfos.Take(LowLevelParams.DEVICES_COUNT).ToArray());
             return command;
         }
 
@@ -97,6 +114,7 @@ namespace Device.Hardware.LowLevel.Utils.Communication
         /// </summary>
         public static Vector2Int[] ParsePositionResponse(string message)
         {
+            message = message.Substring(1, message.Length - 2);
             var values = message.Split(SEPARATOR).Select(int.Parse).ToArray();
             return new []
             {

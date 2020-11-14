@@ -585,6 +585,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   handlerRectTransform: {fileID: 1014584349}
+  handlerImage: {fileID: 1014584350}
+  detectedColor: {r: 1, g: 0, b: 0, a: 0.87058824}
+  lossColor: {r: 0.3254902, g: 1, b: 0, a: 0.87058824}
 --- !u!1 &937409897
 GameObject:
   m_ObjectHideFlags: 0
@@ -1184,6 +1187,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ea5b8ad97d4237932e45d23041ae8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dontDestroy: 0
   wideFieldController: {fileID: 858799763}
   tightFieldController: {fileID: 937409899}
 --- !u!114 &1952883714
@@ -1198,6 +1202,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d45b8ffc9f5540af8e745eb64c744c4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dontDestroy: 0
   wideFieldController: {fileID: 858799763}
   tightFieldController: {fileID: 937409899}
   autoExecute: 0

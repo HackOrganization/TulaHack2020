@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CameraIdentificationSettings
   m_EditorClassIdentifier: 
   identificationData:
-  - cameraType: 0
-    nameIdentity: A4TECH
   - cameraType: 1
+    nameIdentity: A4 Tech
+  - cameraType: 0
     nameIdentity: Logitech

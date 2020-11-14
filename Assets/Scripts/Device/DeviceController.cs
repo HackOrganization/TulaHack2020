@@ -2,6 +2,7 @@
 using Device.Networking;
 using Device.Utils;
 using Device.Video;
+using Device.Video.Utils;
 using Networking.Message;
 using Networking.Message.Utils;
 using UnityEngine;

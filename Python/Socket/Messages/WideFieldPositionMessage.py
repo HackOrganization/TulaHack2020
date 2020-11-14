@@ -7,15 +7,17 @@ from Socket.Messages.Utils.MessageTypes import MessageTypes
 
 # Класс сообщения координат объекта на картинке
 class WideFieldPositionMessage(Message):
+    Probability: int  # byte : 1
     PositionX: int  # short : 2
     PositionY: int  # short : 2
     SizeX: int  # ushort : 2
     SizeY: int  # ushort : 2
 
-    def __init__(self, position: tuple, size: tuple):
-        length = Params.MESSAGE_HEADER_LENGTH + 1 + (2 + 2) + (2 + 2)
+    def __init__(self, probability: int, position: tuple, size: tuple):
+        length = Params.MESSAGE_HEADER_LENGTH + 1 + 1 + (2 + 2) + (2 + 2)
         self.MessageLength = length
         self.MessageType = MessageTypes.WideFieldPosition
+        self.Probability = probability
         self.PositionX = position[0]
         self.PositionY = position[1]
         self.SizeX = size[0]
@@ -25,6 +27,7 @@ class WideFieldPositionMessage(Message):
         returnArray = bytearray()
         returnArray.extend(ByteConverter.GetBytesFromInteger(self.MessageLength))
         returnArray.extend(ByteConverter.GetBytesFromByteInteger(self.MessageType))
+        returnArray.extend(ByteConverter.GetBytesFromByteInteger(self.Probability))
         returnArray.extend(ByteConverter.GetBytesFromShort(self.PositionX))
         returnArray.extend(ByteConverter.GetBytesFromShort(self.PositionY))
         returnArray.extend(ByteConverter.GetBytesFromUshort(self.SizeX))

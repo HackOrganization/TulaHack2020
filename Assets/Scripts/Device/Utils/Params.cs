@@ -2,6 +2,8 @@
 {
     public static class Params
     {
-        public const float CAPTURE_PER_SECOND = 1 / 5f; // 1 / 15f;
+        public const int WEB_CAM_FPS = 30;
+        
+        public const byte WIDEFIELD_DETECTION_PROBABILITY = 50;
     }
 }

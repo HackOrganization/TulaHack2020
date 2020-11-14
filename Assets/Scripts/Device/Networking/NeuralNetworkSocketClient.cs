@@ -81,9 +81,8 @@ namespace Device.Networking
 
         private void OnWideFieldPositionCaught(WideFieldPositionMessage message)
         {
-            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, message.Position, message.Size);
+            EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.WideField, message.Position, message.Size, message.Probability);
             
-            Debug.Log("Unlock capture image");
             EventManager.RaiseEvent(EventType.CaptureNewImage, CameraTypes.WideField);
         }
         

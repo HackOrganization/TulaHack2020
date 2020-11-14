@@ -8,7 +8,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import img_to_array
 
-os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+os.environ['
+TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 img_width, img_height = 640, 480
 print("Loading models....")
@@ -65,14 +66,11 @@ def make_gradcam_heatmap(img_array):
 
 
 def detect_tank(frame):
-    # img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
     img = frame / 255
     img = np.expand_dims(img, axis=0)
-    # img = preprocess_input(img)
     tank_probability, heatmap = make_gradcam_heatmap(img)
 
-    return tank_probability, heatmap  # !!!!!
+    return tank_probability, heatmap
 
 
 def Execute(frame):
@@ -80,10 +78,9 @@ def Execute(frame):
 
     probability, heatMap = detect_tank(frame)
 
-    probability = round(probability * 100, 1)
+    probability = round(probability * 100)
     centerIndex = FindCenter(probability, heatMap)
 
-    # print(F"Packet. Probability: {probability}. Center: {centerIndex}")
     return probability, centerIndex, FindSize(centerIndex)
 
 

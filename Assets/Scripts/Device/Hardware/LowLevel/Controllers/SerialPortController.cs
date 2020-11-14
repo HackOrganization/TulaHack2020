@@ -5,7 +5,7 @@ using Device.Hardware.LowLevel.Utils.Communication;
 using UnityAsyncHelper.Core;
 using UnityEngine;
 
-namespace Device.Hardware.LowLevel
+namespace Device.Hardware.LowLevel.Controllers
 {
     /// <summary>
     /// Контроллер обмена данными через COM-порт
@@ -96,7 +96,6 @@ namespace Device.Hardware.LowLevel
         /// </summary>
         private void OnMessageRead(string message)
         {
-            Debug.Log($"Received from UART:{message}");
             if (_stringComparer.Equals(CommunicationParams.HELLO_RESPONSE, message))
             {
                 onDetected();

@@ -73,7 +73,7 @@ namespace Device
         private void OnDisable()
         {
             ResetSubscription();
-            StopCoroutine(CorRun());
+            StopCoroutine(EWideFiledRun());
             _isDisposed = true;
         }
 
@@ -90,13 +90,13 @@ namespace Device
         /// </summary>
         public void Run()
         {
-            StartCoroutine(CorRun());
+            StartCoroutine(EWideFiledRun());
         }
         
         /// <summary>
-        /// С периодичностью Params.CAPTURE_PER_SECOND запускает работу устройств
+        /// По готовности Нейронки отправляет последний захваченный кадр
         /// </summary>
-        private IEnumerator CorRun()
+        private IEnumerator EWideFiledRun()
         {
             yield return _untilAllReady;
             
@@ -107,11 +107,10 @@ namespace Device
             {
                 _captureLocked = true;
                 
-                hardwareController.WideFieldCameraController.CashPosition();
+                hardwareController.WideFieldHighLevelController.CashPosition();
                 WideFieldDevice.OnSendImageRequest();
                 
                 _debugController.Log();
-                Debug.Log("Image sent");
                 yield return _notCaptureLocked;
                 
                 if(!ComponentsAreReady())
@@ -130,7 +129,6 @@ namespace Device
             EventManager.AddHandler(EventType.EndWork, OnEndWork);
             EventManager.AddHandler(EventType.CaptureNewImage, OnWideFieldMessageResponse);
         }
-
         
         /// <summary>
         /// Отписывается от рассылки глоабльных событий

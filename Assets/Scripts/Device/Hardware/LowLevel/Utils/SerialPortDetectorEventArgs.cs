@@ -1,4 +1,6 @@
-﻿namespace Device.Hardware.LowLevel.Utils
+﻿using Device.Hardware.LowLevel.Controllers;
+
+namespace Device.Hardware.LowLevel.Utils
 {
     public class SerialPortDetectorEventArgs
     {

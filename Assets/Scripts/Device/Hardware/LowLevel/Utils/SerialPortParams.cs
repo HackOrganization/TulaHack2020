@@ -1,4 +1,5 @@
 ﻿using System.IO.Ports;
+using Device.Hardware.LowLevel.Controllers;
 
 namespace Device.Hardware.LowLevel.Utils
 {
