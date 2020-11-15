@@ -1,10 +1,11 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using Core.GameEvents;
 using Core.OrderStart;
 using Device.Hardware.LowLevel;
 using Device.Utils;
+using Device.Video;
 using UI;
 using UnityEngine;
 using Utils;
@@ -18,28 +19,21 @@ namespace Device
     /// </summary>
     public class DeviceManager: Singleton<DeviceManager>, IStarter
     {
-        [Header("Settings")] 
-        
-        
-        [Header("Контроллеры устройств")]
-        [SerializeField] private DeviceController[] deviceControllers;
+        [Header("Контроллеры устройств")] 
+        [SerializeField] private WideFieldDeviceController wideFieldDeviceController;
+        [SerializeField] private TightFieldDeviceController tightFieldDeviceController;
         
         [Header("Hardware info")] 
         [SerializeField] private HardwareController hardwareController;
 
         /// <summary>
-        /// Точки подключения устройств для обмена сообщениями
+        /// Возвращает массив контроллеров управления устройствами
         /// </summary>
-        private static IPEndPoint[] DeviceConnectionPoints => new[]
+        private IEnumerable<DeviceController> DeviceControllers => new DeviceController[]
         {
-            NetworkingParams.WideFieldEndPoint
+            wideFieldDeviceController,
+            tightFieldDeviceController
         };
-
-        /// <summary>
-        /// Получает котроллер управления широкоугольной камеры
-        /// </summary>
-        private DeviceController WideFieldDevice 
-            => deviceControllers.First(d => d.cameraType == CameraTypes.WideField);
 
         private bool _isDisposed;
         private bool _captureLocked;
@@ -61,11 +55,9 @@ namespace Device
             
             _untilAllReady = new WaitUntil(ComponentsAreReady);
             _notCaptureLocked = new WaitUntil(()=> !_captureLocked);
-            
-            var deviceConnectionPoints = DeviceConnectionPoints;
-            for (var i = 0; i < deviceControllers.Length; i++)
-                deviceControllers[i].Initialize(deviceConnectionPoints[i]);
-            
+
+            foreach (var deviceController in DeviceControllers)
+                deviceController.Initialize();
             hardwareController.Initialize();
 
             StartCoroutine(EWideFiledRun());
@@ -83,7 +75,7 @@ namespace Device
         /// </summary>
         private bool ComponentsAreReady()
         {
-            return deviceControllers.All(d => d.IsReady) && hardwareController.IsReady;
+            return DeviceControllers.All(d => d.IsReady) && hardwareController.IsReady;
         }
         
         /// <summary>
@@ -101,16 +93,28 @@ namespace Device
                 _captureLocked = true;
                 
                 hardwareController.WideFieldHighLevelController.CashPosition();
-                WideFieldDevice.OnSendImageRequest();
+                wideFieldDeviceController.OnSendImageRequest();
                 
                 if(_debugInitialized)
                     _debugController.Log();
                 yield return _notCaptureLocked;
-                
-                if(!ComponentsAreReady())
-                    //ToDo: dispose all controllers (Neural, AsyncClient, Hardware...)
+
+                if (!ComponentsAreReady())
+                {
+                    Dispose();
                     yield break;
+                }   
             }
+        }
+
+        private void Dispose()
+        {
+            EventManager.RaiseEvent(EventType.EndWork, true);
+            hardwareController.Dispose();
+            foreach (var deviceController in DeviceControllers)
+                deviceController.Dispose();
+
+            ResetSubscription();
         }
 
         #region GAMEEVENTS

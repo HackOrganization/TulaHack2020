@@ -956,11 +956,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 858799761}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 931575d821a64b298acd3f122452253f, type: 3}
+  m_Script: {fileID: 11500000, guid: bea1b717573a4238aaddad669f59a859, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  execute: 1
-  cameraType: 0
   videoHandler: {fileID: 858799764}
 --- !u!114 &858799766
 MonoBehaviour:
@@ -1127,11 +1125,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 937409897}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 931575d821a64b298acd3f122452253f, type: 3}
+  m_Script: {fileID: 11500000, guid: 98f2ce15f9d847b9945b37622f87ec50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  execute: 1
-  cameraType: 1
   videoHandler: {fileID: 937409900}
 --- !u!1 &954391453
 GameObject:
@@ -2363,9 +2359,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dontDestroy: 0
-  deviceControllers:
-  - {fileID: 858799765}
-  - {fileID: 937409901}
+  wideFieldDeviceController: {fileID: 858799765}
+  tightFieldDeviceController: {fileID: 937409901}
   hardwareController: {fileID: 1952883713}
 --- !u!114 &1952883713
 MonoBehaviour:

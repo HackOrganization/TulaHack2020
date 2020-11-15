@@ -57,9 +57,14 @@ namespace Device.Video
             SetSubscription();
         }
 
-        private void OnDestroy()
+        public void Disable()
         {
             ResetSubscription();
+        }
+
+        private void OnDestroy()
+        {
+            Disable();
         }
         
         #region GAMEEVENTS
