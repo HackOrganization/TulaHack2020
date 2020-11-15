@@ -68,9 +68,11 @@ namespace Device.Hardware.HighLevel
             }
             else
             {
-                var newObjectImagePosition = objectImagePosition.DelayedWideImageObjectPosition(CurrentPosition, CashedDevicePosition);
-                newObjectImagePosition.Clamp(MinImagePosition, MaxImagePosition);
-                EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, true, newObjectImagePosition, args[3]);
+                // var newObjectImagePosition = objectImagePosition.DelayedWideImageObjectPosition(CurrentPosition, CashedDevicePosition);
+                // newObjectImagePosition.Clamp(MinImagePosition, MaxImagePosition);
+                // EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, true, newObjectImagePosition, args[3]);
+                
+                EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, true, objectImagePosition, args[3]);
                 
                 var azimuthStep = objectImagePosition.AzimuthWideFieldCameraStep(CashedDevicePosition);
                 SetUpAzimuth(ref azimuthStep, SourceCommandType.Auto);

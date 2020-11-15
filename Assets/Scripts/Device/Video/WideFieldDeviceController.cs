@@ -14,6 +14,12 @@ namespace Device.Video
         /// </summary>
         protected override CameraTypes CameraType => CameraTypes.WideField;
 
+        /// <summary>
+        /// Фиксирует, что устройство готово к работе.
+        /// Для этого необходиом, чтобы было создано соединение с сервером и камера подключилась
+        /// </summary>
+        public override bool IsReady => Client.Connected && videoHandler.IsAuthorized && !Client.IsAnyDisposed;
+
         public override void Initialize()
         {
             base.Initialize();

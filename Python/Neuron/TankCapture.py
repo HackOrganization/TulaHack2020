@@ -41,6 +41,11 @@ def Execute(frame):
     pred = base_model.predict(img)
     pred, x, y, w, h = pred[0]
 
+    x *= img_width
+    w *= img_width
+    y *= img_height
+    h *= img_height
+
     return int(pred * 100), (int(x), int(y)), (int(w), int(h))
 
 

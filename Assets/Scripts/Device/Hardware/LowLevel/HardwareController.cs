@@ -124,6 +124,10 @@ namespace Device.Hardware.LowLevel
             _serialPortController.Send(CommunicationParams.GetCalibrationMessage());
             yield return new WaitUntil(()=> _calibrateDone);
             
+            var setUpMessage = CommunicationParams.GetSetupMessage(new SetupInfo(), new SetupInfo(), new SetupInfo(1000));
+            _serialPortController.Send(setUpMessage);
+            yield return _loopWait;
+            
             while (!_isDisabled)
             {
                 var success = false;
@@ -143,15 +147,15 @@ namespace Device.Hardware.LowLevel
                     _serialPortController.Send(moveMessage);
                     _trackModeController.Reset();
                 }
-                else if (!_trackModeController.SetUp())
+                else //if (!_trackModeController.SetUp())
                 {
                     //если режим слежения не нужно запускать, то запрашивает текущие координаты для уточнения
                     _positionRequested = true;
                     _serialPortController.Send(CommunicationParams.GetPositionRequestMessage());    
                 }
                 
-                foreach (var controller in CameraBaseControllers)
-                    controller.updateCurrentPosition = success;
+                // foreach (var controller in CameraBaseControllers)
+                //     controller.updateCurrentPosition = success;
                 
                 yield return _loopWait;
                 
