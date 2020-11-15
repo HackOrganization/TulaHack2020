@@ -124,6 +124,10 @@ namespace Device.Hardware.LowLevel
             _serialPortController.Send(CommunicationParams.GetCalibrationMessage());
             yield return new WaitUntil(()=> _calibrateDone);
             
+            var setUpMessage = CommunicationParams.GetSetupMessage(new SetupInfo(), new SetupInfo(), new SetupInfo(1000));
+            _serialPortController.Send(setUpMessage);
+            yield return _loopWait;
+            
             while (!_isDisabled)
             {
                 var success = false;
@@ -150,8 +154,8 @@ namespace Device.Hardware.LowLevel
                     _serialPortController.Send(CommunicationParams.GetPositionRequestMessage());    
                 }
                 
-                foreach (var controller in CameraBaseControllers)
-                    controller.updateCurrentPosition = success;
+                // foreach (var controller in CameraBaseControllers)
+                //     controller.updateCurrentPosition = success;
                 
                 yield return _loopWait;
                 

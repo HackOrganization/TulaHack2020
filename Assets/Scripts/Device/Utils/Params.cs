@@ -4,7 +4,7 @@
     {
         public const int WEB_CAM_FPS = 30;
         
-        public const byte WIDEFIELD_DETECTION_PROBABILITY = 50;
+        public const byte WIDEFIELD_DETECTION_PROBABILITY = 90;
     }
 
     public static class WideFieldParams

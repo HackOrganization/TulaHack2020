@@ -47,8 +47,6 @@ class MotionDetection(Thread):
             if not workData['client'].fileno() == -1:
                 workData['client'].send(responseObject.Serialize())
 
-            print(round(1.0 / (time.time() - fixTime), 2))
-
         self.Locker.acquire()
         try:
             self.Buffer.clear()

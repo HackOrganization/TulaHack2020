@@ -10,7 +10,7 @@
         /// <summary>
         /// Число запросов с простоем до установки режима слежения
         /// </summary>
-        public const int EMPTY_REQUESTS_TO_SETUP_TRACKING_MODE = 250;
+        public const int EMPTY_REQUESTS_TO_SETUP_TRACKING_MODE = 50;
         
         /// <summary>
         /// Скрость вращения по умолчанию 
@@ -28,17 +28,17 @@
         /// <summary>
         /// Число шагов за полный круг (АБСОЛЮТНОЕ ЗНАЧЕНИЕ)
         /// </summary>
-        public const int CYCLE_STEPS = 8000;
+        public const int CYCLE_STEPS = 7920;
         
         /// <summary>
         /// Минимальное время прохождения полного круга (на максимальной скорости) (в секундах)
         /// </summary>
-        public const float FULL_CYCLE_MIN_TIME = 30.22f;
-        
+        public const float FULL_CYCLE_MIN_TIME = 29.95f;
+
         /// <summary>
         /// Минимальная точка шаговика (ШПК)
         /// </summary>
-        public const int WIDEFIELD_MIN_STEPS = -6000;
+        public const int WIDEFIELD_MIN_STEPS = -5500;
         
         /// <summary>
         /// Максимальная точка шаговика (ШПК)
@@ -51,37 +51,37 @@
         /// <summary>
         /// Число шагов за полный круг (по горизонтали) (АБСОЛЮТНОЕ ЗНАЧЕНИЕ)
         /// </summary>
-        public const int CYCLE_STEPS_X = 7961;
-        
+        public const int CYCLE_STEPS_X = 7854;
+
         /// <summary>
         /// Число шагов за полный круг (по вертикали) (АБСОЛЮТНОЕ ЗНАЧЕНИЕ)
         /// </summary>
-        public const int CYCLE_STEPS_Y = 6800;//6068//6590
+        public const int CYCLE_STEPS_Y = 6152;
         
         /// <summary>
         /// Минимальное время прохождения полного круга по горизонтали (на максимальной скорости) (в секундах)
         /// </summary>
-        public const float FULL_CYCLE_MIN_TIME_X = 30.56f;
+        public const float FULL_CYCLE_MIN_TIME_X = 29.99f;
         
         /// <summary>
         /// Минимальное время прохождения полного круга по горизонтали (на максимальной скорости) (в секундах)
         /// </summary>
-        public const float FULL_CYCLE_MIN_TIME_Y = 67.37f;
-        
+        public const float FULL_CYCLE_MIN_TIME_Y = 65.18f;
+
         /// <summary>
         /// Амплитуда шаговика (УПК X)
         /// </summary>
-        public const int TIGHTFIELD_MIN_STEPS_X = -4600;
+        public const int TIGHTFIELD_MIN_STEPS_X = -4800;
         
         /// <summary>
         /// Максимальная точка шаговика (ШПК)
         /// </summary>
         public const int TIGHTFIELD_MAX_STEPS_X = 0;
-        
+
         /// <summary>
         /// Амплитуда шаговика (УПК Y)
         /// </summary>
-        public const int TIGHTFIELD_MIN_STEPS_Y = -950;
+        public const int TIGHTFIELD_MIN_STEPS_Y = -940;
         
         /// <summary>
         /// Максимальная точка шаговика (ШПК)

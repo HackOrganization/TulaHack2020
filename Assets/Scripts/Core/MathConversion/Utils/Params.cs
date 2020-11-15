@@ -37,12 +37,12 @@ namespace Core.MathConversion.Utils
         /// <summary>
         /// Разность начальной точки УПК и ШПК
         /// </summary>
-        public const int DELTA_START_STEP_X = -530;
+        public const int DELTA_START_STEP_X = -490;
 
         /// <summary>
         /// Разность начальной точки УПК и верхнего положения кадра ШПК 
         /// </summary>
-        public const int DELTA_START_STEP_Y = -240;
+        public const int DELTA_START_STEP_Y = -190;
         
         /// <summary>
         /// Вертикальный угол захвата камеры
