@@ -26,11 +26,8 @@ namespace Device.Hardware.HighLevel.Utils
         {
             if(!TowardsPosition.TightFieldNeedUpdate(in newValue))
                 return;
-            
-            TowardsPosition = new Vector2Int(
-                newValue.x < 0 ? TowardsPosition.x : newValue.x,
-                newValue.y < 0 ? TowardsPosition.y : newValue.y);
-            
+
+            TowardsPosition = newValue;
             _updated = true;
         }
 

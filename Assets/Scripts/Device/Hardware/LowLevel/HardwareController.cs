@@ -147,7 +147,7 @@ namespace Device.Hardware.LowLevel
                     _serialPortController.Send(moveMessage);
                     _trackModeController.Reset();
                 }
-                else //if (!_trackModeController.SetUp())
+                else if (!_trackModeController.SetUp())
                 {
                     //если режим слежения не нужно запускать, то запрашивает текущие координаты для уточнения
                     _positionRequested = true;

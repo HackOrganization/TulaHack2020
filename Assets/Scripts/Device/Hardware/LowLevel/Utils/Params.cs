@@ -10,7 +10,7 @@
         /// <summary>
         /// Число запросов с простоем до установки режима слежения
         /// </summary>
-        public const int EMPTY_REQUESTS_TO_SETUP_TRACKING_MODE = 250;
+        public const int EMPTY_REQUESTS_TO_SETUP_TRACKING_MODE = 50;
         
         /// <summary>
         /// Скрость вращения по умолчанию 
