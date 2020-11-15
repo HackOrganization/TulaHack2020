@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Utils.Extensions
@@ -24,5 +25,21 @@ namespace Utils.Extensions
         /// </summary>
         public static bool IsNullSize(this Vector2Int position)
             => NullVectorInt.Where((t, i) => position[i] == t).Any();
+
+        /// <summary>
+        /// Усредненное значение вектора 
+        /// </summary>
+        public static Vector2 Average(this IEnumerable<Vector2> list)
+        {
+            var count = 0;
+            var buffer = new Vector2();
+            foreach (var element in list)
+            {
+                buffer += element;
+                ++count;
+            }
+
+            return buffer / count;
+        }
     }
 }

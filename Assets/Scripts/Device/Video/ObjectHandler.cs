@@ -1,5 +1,6 @@
 ﻿using Core.GameEvents;
 using Device.Utils;
+using Device.Video.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils.Extensions;
@@ -19,7 +20,9 @@ namespace Device.Video
         [SerializeField] private RawImage handlerImage;
         [SerializeField] private Color detectedColor;
         [SerializeField] private Color lossColor;
-        
+
+        [Header("DerivativeController")] 
+        [SerializeField] private CompoundController compoundController;
         
         /// <summary>
         /// Тип камеры
@@ -105,8 +108,8 @@ namespace Device.Video
             if(!_detectionResult)
                 return;
             
-            handlerRectTransform.SetHandlerPosition(args[2], in _containerResolutionRatio);
-            handlerRectTransform.SetHandlerSize(args[3], in _containerResolutionRatio);
+            handlerRectTransform.SetHandlerPosition(args[2], in _containerResolutionRatio, compoundController.PositionValue);
+            handlerRectTransform.SetHandlerSize(args[3], in _containerResolutionRatio, compoundController.SizeValue);
         }
         
         #endregion

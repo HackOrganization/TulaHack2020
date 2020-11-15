@@ -72,7 +72,7 @@ namespace UI.InputSpace
         {
             while (enableToggle.isOn && IsDragged)
             {
-                //EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.TightField, SourceCommandType.Manual, SendStep);
+                EventManager.RaiseEvent(EventType.DeviceGoPosition, CameraTypes.TightField, SourceCommandType.Manual, SendStep);
                 Debug.Log($"{SendStep}");
                 yield return LoopWait;
             }
