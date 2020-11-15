@@ -187,7 +187,10 @@ namespace Device.Hardware.LowLevel
                 cameraControllers[i].CurrentPosition = newPositions[i];
         }
 
-        private void OnDisable()
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Dispose()
         {
             _isDisabled = true;
             StopAllCoroutines();
@@ -204,6 +207,11 @@ namespace Device.Hardware.LowLevel
             _threadWrappers.Clear();
             
             _serialPortController?.Dispose();
+        }
+        
+        private void OnDisable()
+        {
+            Dispose();
         }
     }
 }

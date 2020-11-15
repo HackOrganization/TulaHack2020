@@ -47,6 +47,11 @@ namespace Device.Video
         /// </summary>
         public Texture2D SendFrame { get; private set; }
 
+        /// <summary>
+        /// Включение автозахвата изображени п ри проигрывании видео
+        /// </summary>
+        private bool AutoCapture => _cameraType == CameraTypes.WideField;
+
         private bool _initialized;
         private CameraTypes _cameraType;
         private Vector2Int _webCamResolution;
@@ -63,7 +68,7 @@ namespace Device.Video
 
         private void OnDestroy()
         {
-            ResetSubscription();
+            Dispose();
         }
 
         /// <summary>
@@ -116,7 +121,9 @@ namespace Device.Video
             Status = VideoStatuses.Play;
             
             SetUpOnPlay();
-            StartCoroutine(ECapture());
+            
+            if(AutoCapture)
+                StartCapture();
             
             return true;
         }
@@ -133,11 +140,19 @@ namespace Device.Video
                 _webCamTexture.Stop();
 
             Status = VideoStatuses.Pause;
-            StopCoroutine(ECapture());
+            EndCapture();
             
             return true;
         }
 
+        /// <summary>
+        /// Включение корутины автозахвата изображения
+        /// </summary>
+        public void StartCapture()
+        {
+            StartCoroutine(ECapture());
+        }
+        
         /// <summary>
         /// Захватывает изображение с камеры для дальнейшей передачи
         /// Захват изображение происходит с частотой отрисовки камеры.
@@ -155,14 +170,32 @@ namespace Device.Video
                     var pixelsArray = _webCamTexture.GetPixels32();
                     SendFrame.SetPixels32(pixelsArray);
                     EventManager.RaiseEvent(EventType.DeviceHandlePosition, _cameraType);
-                    //Debug.Log($"Camera [{_cameraType} : {_webCamTexture.deviceName}]: frame is ready");
                 }
                 catch (Exception ex)
                 {        
-                    Debug.Log($"Camera [{_cameraType} : {_webCamTexture.deviceName}]: {ex}");
+                    Debug.LogError($"Camera [{_cameraType} : {_webCamTexture.deviceName}]: {ex}");
                 }
                 yield return _webCamFrameRateWait;
             }
+        }
+
+        /// <summary>
+        /// Выключение корутины автозахвата изображения
+        /// </summary>
+        public void EndCapture()
+        {
+            StopCoroutine(ECapture());
+        }
+
+        public void Dispose()
+        {
+            Stop();
+            Status = VideoStatuses.Null;
+            
+            if(objectHandler != null)
+                objectHandler.Disable();
+            
+            ResetSubscription();
         }
         
         #region GAMEEVENTS

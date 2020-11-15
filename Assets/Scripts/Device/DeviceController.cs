@@ -1,10 +1,6 @@
-﻿using System.Net;
-using Device.Networking;
+﻿using Device.Networking;
 using Device.Utils;
 using Device.Video;
-using Device.Video.Utils;
-using Networking.Message;
-using Networking.Message.Utils;
 using UnityEngine;
 
 namespace Device
@@ -12,58 +8,41 @@ namespace Device
     /// <summary>
     /// Контроллер управления устройством 
     /// </summary>
-    public class DeviceController : MonoBehaviour
+    public abstract class DeviceController : MonoBehaviour
     {
-        [Header("Debug")]
-        [SerializeField] private bool execute;
-        
         [Header("Camera info")] 
-        public CameraTypes cameraType;
-        [SerializeField] private VideoHandler videoHandler;
+        [SerializeField] protected VideoHandler videoHandler;
+        
+        /// <summary>
+        /// Тип камеры
+        /// </summary>
+        protected abstract CameraTypes CameraType { get; }
         
         /// <summary>
         /// Фиксирует, что устройство готово к работе.
         /// Для этого необходиом, чтобы было создано соединение с сервером и камера подключилась
         /// </summary>
-        public bool IsReady => _client.Connected && videoHandler.IsAuthorized && !_client.IsAnyDisposed;
+        public bool IsReady => Client.Connected && videoHandler.IsAuthorized && !Client.IsAnyDisposed;
         
-        private NeuralNetworkBaseClient _client;
+        protected NeuralNetworkBaseClient Client;
          
         /// <summary>
         /// Инициализация все компонентов устройства 
         /// </summary>
-        public void Initialize(IPEndPoint endPoint)
+        public virtual void Initialize()
         {
-            if (!execute)
-                return;
-            
-            videoHandler.Initialize(cameraType);
-            _client = new NeuralNetworkSocketClient(endPoint);
+            videoHandler.Initialize(CameraType);
+        }
+
+        public void Dispose()
+        {
+            Client?.Dispose();
+            videoHandler.Dispose();
         }
         
-        /// <summary>
-        /// Перехватывает команду отправки изображения
-        /// </summary>
-        public void OnSendImageRequest()
-        {
-            if(videoHandler.Status != VideoStatuses.Play)
-                if(!videoHandler.Play())
-                    return;
-            
-            var newMessage = new ImageMessage(
-                cameraType == CameraTypes.WideField
-                    ? MessageType.WideFieldImage
-                    : MessageType.TightFieldImage)
-            {
-                Image = videoHandler.SendFrame
-            };
-
-            _client.SendMessage(newMessage);
-        }
-
         private void OnDisable()
         {
-            _client?.Dispose();
+            Dispose();
         }
     }
 }
