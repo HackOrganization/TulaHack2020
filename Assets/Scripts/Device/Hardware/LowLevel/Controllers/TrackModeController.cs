@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using Device.Hardware.HighLevel;
-using Device.Hardware.LowLevel.Utils;
+using Device.Utils;
 using UnityEngine;
 using Utils.Extensions;
 
+using GlobalWideFieldParams = Device.Utils.WideFieldParams;
 using LowLevelWideFieldParams = Device.Hardware.LowLevel.Utils.WideFieldParams;
+using Params = Device.Hardware.LowLevel.Utils.Params;
 
 namespace Device.Hardware.LowLevel.Controllers
 {
@@ -31,6 +33,9 @@ namespace Device.Hardware.LowLevel.Controllers
         /// </summary>
         public bool SetUp()
         {
+            if (GlobalWideFieldParams.SourceCommandType != SourceCommandType.Auto)
+                return false;
+            
             var needChangeDirection = NeedChangeDirection();
             if (_isEnabled && !needChangeDirection)
                 return false;

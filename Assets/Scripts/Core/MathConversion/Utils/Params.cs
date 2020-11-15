@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using VideoWideFieldParams = Device.Video.Utils.WideFieldParams;
+﻿using VideoWideFieldParams = Device.Video.Utils.WideFieldParams;
 using LowLevelWideFieldParams = Device.Hardware.LowLevel.Utils.WideFieldParams;
 using LowLevelTightFiledParams = Device.Hardware.LowLevel.Utils.TightFieldParams;
 
@@ -52,16 +50,16 @@ namespace Core.MathConversion.Utils
         /// <summary>
         /// Горизонтальных шагов на 1 деление круга (радус)
         /// </summary>
-        public static readonly float HorizontalAngleToSteps = (float) LowLevelTightFiledParams.CYCLE_STEPS_X / Params.CYCLE_ANGLES;
+        public static readonly float AzimuthAngleToSteps = (float) LowLevelTightFiledParams.CYCLE_STEPS_X / Params.CYCLE_ANGLES;
         
         /// <summary>
         /// Вертикальных шагов на 1 деление круга (градус)
         /// </summary>
-        public static readonly float VerticalAngleToSteps = (float) LowLevelTightFiledParams.CYCLE_STEPS_Y / Params.CYCLE_ANGLES;
+        public static readonly float ElevationAngleToSteps = (float) LowLevelTightFiledParams.CYCLE_STEPS_Y / Params.CYCLE_ANGLES;
 
         /// <summary>
         /// Пикселей изображения ШПК на 1 деление круга (градус)
         /// </summary>
-        public static readonly float VerticalAnglesToPixels = VideoWideFieldParams.HEIGHT / VERTICAL_ANGLES;
+        public static readonly float ElevationAnglesToPixels = VideoWideFieldParams.HEIGHT / VERTICAL_ANGLES;
     }
 }

@@ -19,7 +19,7 @@ namespace Device.Video.Utils
     /// </summary>
     public class DerivativeValue
     {
-        private const int VALUES_COUNT = 3;
+        private const int VALUES_COUNT = 2;
 
         /// <summary>
         /// Возвращает отрегулированное значение по последним обновленным

@@ -2,6 +2,7 @@
 using Core.MathConversion;
 using Device.Hardware.HighLevel.Utils;
 using Device.Utils;
+using UI.Logging;
 using UnityEngine;
 using Utils.Extensions;
 using EventType = Core.GameEvents.EventType;
@@ -62,7 +63,11 @@ namespace Device.Hardware.HighLevel
         private void AutoSetUp(in object[] args)
         {
             var objectImagePosition = (Vector2Int) args[2];
-            if (objectImagePosition.IsNullPosition() || (byte) args[4] < Params.WIDEFIELD_DETECTION_PROBABILITY)
+            
+            var prediction = (byte) args[4];
+            LogPredictionController.UpdateInfo(prediction);
+            
+            if (objectImagePosition.IsNullPosition() || prediction < Params.WIDEFIELD_DETECTION_PROBABILITY)
             {
                 EventManager.RaiseEvent(EventType.CameraDrawObject, CameraTypes.WideField, false);
             }

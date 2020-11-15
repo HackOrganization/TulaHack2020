@@ -43,8 +43,8 @@ namespace Core.MathConversion
         /// </summary>
         public static int ElevationTightFieldCameraStep(this Vector2Int objectPosition)
         {
-            var angleValue = objectPosition.y / TightFieldParams.VerticalAnglesToPixels;
-            var stepValue = TightFieldParams.DELTA_START_STEP_Y - (int)(angleValue * TightFieldParams.VerticalAngleToSteps);
+            var angleValue = objectPosition.y / TightFieldParams.ElevationAnglesToPixels;
+            var stepValue = TightFieldParams.DELTA_START_STEP_Y - (int)(angleValue * TightFieldParams.ElevationAngleToSteps);
 
             return stepValue;
         }

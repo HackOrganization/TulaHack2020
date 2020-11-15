@@ -6,6 +6,7 @@ using Device.Hardware.HighLevel;
 using Device.Hardware.LowLevel.Controllers;
 using Device.Hardware.LowLevel.Utils.Communication;
 using Device.Hardware.LowLevel.Utils.Communication.Infos;
+using UI.Logging;
 using UnityEngine;
 using Utils;
 
@@ -177,6 +178,7 @@ namespace Device.Hardware.LowLevel
             {
                 var newPositions = CommunicationParams.ParsePositionResponse(message);
                 SetUpNewPositions(in newPositions);
+                LogPositionController.UpdateInfo(in newPositions);
                 _positionRequested = false;
             }
         }

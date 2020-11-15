@@ -19,8 +19,8 @@ namespace Utils.Extensions
         /// </summary>
         public static bool TightFieldNeedUpdate(this Vector2Int currentPosition, in Vector2Int newPosition)
         {
-            return Mathf.Abs(newPosition.y - currentPosition.y) >= TightFieldParams.VerticalAngleToSteps
-                   || Mathf.Abs(newPosition.x - currentPosition.x) >= TightFieldParams.HorizontalAngleToSteps;
+            return Mathf.Abs(newPosition.y - currentPosition.y) >= TightFieldParams.ElevationAngleToSteps
+                   || Mathf.Abs(newPosition.x - currentPosition.x) >= TightFieldParams.AzimuthAngleToSteps;
         }
     }
 }
